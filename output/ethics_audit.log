@@ -1,0 +1,9 @@
+2025-11-25T14:22:10 | AUDIT   | ethics_enabled: true
+2025-11-25T14:22:10 | AUDIT   | mode: whitelist | strict_mode: false | emergency_mode: false
+2025-11-25T14:22:10 | AUDIT   | bypass_enabled: true | allow_manufacturer_override: true
+2025-11-25T14:22:31 | CHECK   | manufacturer | Tremco                | ALLOWED  | in whitelist
+2025-11-25T14:22:31 | CHECK   | supplier     | White Cap             | ALLOWED  | in whitelist
+2025-11-25T14:22:32 | CHECK   | subcontractor| Circle Sheet Metal    | ALLOWED  | in whitelist
+2025-11-25T14:22:33 | CHECK   | manufacturer | Sika                  | REJECTED | not in whitelist
+2025-11-25T14:22:33 | BYPASS  | manufacturer | Sika                  | ALLOWED  | reason: "Hospital roof leaking — must bid today"
+2025-11-25T14:22:34 | FINAL   | Springfield_Airport_Hangar.pdf | CLEAN (with 1 sovereign override)
