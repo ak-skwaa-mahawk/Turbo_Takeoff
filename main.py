@@ -244,3 +244,87 @@ def rate_sub_performance(sub_name, project_key, reply_hours, price, baseline_pri
 
     save_ledger()
     click.echo(f"   JUDGED: {sub_name} → Rating {final_rating}/100 | Speed {speed_score} | Price {round(price_score,1)} | Alignment {alignment}")
+# === AI BID FORECASTING ENGINE — SOVEREIGN EDITION ===
+def train_forecast_model():
+    """Trains lightweight in-memory model on ledger history"""
+    import numpy as np
+    from sklearn.linear_model import Ridge
+    from sklearn.preprocessing import StandardScaler
+
+    X, y_bid, y_win = [], [], []
+    for proj_key, data in ledger["projects"].items():
+        # Extract features from past projects
+        features = [
+            data.get("sealant_lf", 0),
+            data.get("deck_coating_sf", 0),
+            len(data.get("invited_subs", {})),
+            cfg["app"]["default_profit_pct"]
+        ]
+        X.append(features)
+        y_bid.append(data.get("final_bid", 0))
+        y_win.append(1 if data.get("won", False) else 0)
+
+    if len(X) < 5:
+        return None  # not enough history yet
+
+    X = np.array(X)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Train bid predictor
+    bid_model = Ridge(alpha=1.0)
+    bid_model.fit(X_scaled, y_bid)
+
+    # Train win probability
+    from sklearn.linear_model import LogisticRegression
+    win_model = LogisticRegression()
+    win_model.fit(X_scaled, y_win)
+
+    return {"bid": bid_model, "win": win_model, "scaler": scaler}
+
+def ai_bid_forecast(takeoff_quantities: dict, sub_count: int):
+    """Gemini + trained model = sovereign prophecy"""
+    model = train_forecast_model()
+    if not model:
+        return {"forecast": "Not enough circle history yet — building wisdom..."}
+
+    import numpy as np
+    features = np.array([[ 
+        takeoff_quantities.get("sealant_linear_feet", 0),
+        takeoff_quantities.get("deck_coating_sf", 0),
+        sub_count,
+        cfg["app"]["default_profit_pct"]
+    ]])
+    X_scaled = model["scaler"].transform(features)
+
+    predicted_bid = model["bid"].predict(X_scaled)[0]
+    win_prob = model["win"].predict_proba(X_scaled)[0][1]
+
+    # Gemini reality-check overlay
+    prompt = f"""
+    Historical patterns show {win_prob:.1%} win chance at {cfg['app']['default_profit_pct']}% profit.
+    Takeoff: {takeoff_quantities.get('sealant_linear_feet',0):,} LF sealant, {takeoff_quantities.get('deck_coating_sf',0):,} SF deck.
+    Subs needed: {sub_count}.
+    Reply with only a JSON prophecy:
+    {{
+      "predicted_final_bid": 0,
+      "recommended_profit_pct": {cfg['app']['default_profit_pct']},
+      "win_probability": "{win_prob:.1%}",
+      "risk_flags": ["none"],
+      "top_performing_sub": "Circle Sheet Metal"
+    }}
+    """
+    try:
+        prophecy = GEMINI_MODEL.generate_content(prompt)
+        import json
+        gemini_forecast = json.loads(prophecy.text.strip("`"))
+    except:
+        gemini_forecast = {}
+
+    return {
+        "model_predicted_bid": round(predicted_bid, 0),
+        "gemini_prophecy": gemini_forecast,
+        "win_probability": f"{win_prob:.1%}",
+        "recommended_profit": gemini_forecast.get("recommended_profit_pct", cfg["app"]["default_profit_pct"]),
+        "top_sub_prediction": gemini_forecast.get("top_performing_sub", "Unknown yet")
+    }
