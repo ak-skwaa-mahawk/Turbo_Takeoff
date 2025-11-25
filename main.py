@@ -226,3 +226,74 @@ def is_entity_allowed(entity_name: str, entity_type: str, bypass_reason: str = "
 def finalize_audit(project_name: str, violations: int, overrides: int):
     status = "CLEAN" if violations == 0 and overrides == 0 else f"OVERRIDDEN ({overrides})" if overrides else f"VIOLATIONS ({violations})"
     audit_log("FINAL", "project", project_name, status)
+# === SOVEREIGN AUDIT REPORT GENERATION ===
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+
+def generate_audit_report(project_name: str, project_key: str, violations: int, overrides: int, final_bid: float):
+    pdf_path = OUTPUT_DIR / f"SOVEREIGN_AUDIT_REPORT_{project_key}.pdf"
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter, topMargin=1*inch)
+    styles = getSampleStyleSheet()
+    story = []
+
+    # Header
+    story.append(Paragraph("PRO SEAL WEATHERPROOFING", styles["Title"]))
+    story.append(Paragraph("SOVEREIGN ETHICS AUDIT REPORT", ParagraphStyle(name="Subtitle", fontSize=18, textColor=colors.darkred)))
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph(f"Project: {project_name}", styles["Heading2"]))
+    story.append(Paragraph(f"Date: {datetime.now():%B %d, %Y at %I:%M %p}", styles["Normal"]))
+    story.append(Paragraph(f"Final Bid Amount: ${final_bid:,.0f}", styles["Normal"]))
+    story.append(Spacer(1, 0.5*inch))
+
+    # Ethics Status
+    status_color = colors.darkgreen if violations == 0 and overrides == 0 else colors.orange if overrides else colors.red
+    status_text = "CIRCLE CLEAN" if violations == 0 and overrides == 0 else f"CLEAN WITH {overrides} SOVEREIGN OVERRIDE(S)" if overrides else f"{violations} ETHICS VIOLATION(S)"
+    story.append(Paragraph(f"<font size=20 color={status_color.name}><b>{status_text}</b></font>", styles["Normal"]))
+    story.append(Spacer(1, 0.5*inch))
+
+    # Summary table
+    data = [
+        ["Ethics Mode", cfg["ethics"].get("mode", "blacklist").title()],
+        ["Strict Mode", "ON" if cfg["ethics"].get("strict_mode", False) else "OFF"],
+        ["Emergency Mode", cfg["ethics"]["emergency_mode"]["reason"] if cfg["ethics"]["emergency_mode"]["active"] else "Inactive"],
+        ["Manual Bypass Allowed", "Yes" if cfg["ethics"]["bypass"]["enabled"] else "No"],
+        ["Ethics Violations", str(violations)],
+        ["Sovereign Overrides Used", str(overrides)],
+    ]
+    table = Table(data, colWidths=[3.5*inch, 3*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.black),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('BACKGROUND', (0, -2), (-1, -2), colors.HexColor("#ffcccc") if violations else colors.HexColor("#ccffcc")),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor("#fff4cc") if overrides else colors.HexColor("#ccffcc")),
+    ]))
+    story.append(table)
+    story.append(Spacer(1, 0.5*inch))
+
+    # Detailed log excerpt
+    story.append(Paragraph("Recent Audit Trail (last 20 actions):", styles["Heading3"]))
+    try:
+        with open(AUDIT_LOG) as f:
+            lines = f.readlines()[-20:]
+        log_text = "<br/>".join(line.strip() for line in lines)
+        story.append(Paragraph(log_text, ParagraphStyle(name="Log", fontName="Courier", fontSize=8)))
+    except:
+        story.append(Paragraph("Audit log not yet available.", styles["Normal"]))
+
+    # Signature
+    story.append(Spacer(1, 1*inch))
+    story.append(Paragraph("Signed by the Circle,", styles["Normal"]))
+    story.append(Paragraph("Scott — Pro Seal Weatherproofing", styles["Normal"]))
+    story.append(Paragraph("Love + truth + chase = life", ParagraphStyle(name="Closing", fontSize=12, textColor=colors.darkblue)))
+
+    doc.build(story)
+    click.echo(f"SOVEREIGN AUDIT REPORT → {pdf_path.name}")
+# Final audit + report
+        violations_count = len([1 for line in open(AUDIT_LOG) if "BLOCKED" in line or "REJECTED" in line])
+        override_count = len([1 for line in open(AUDIT_LOG) if "BYPASS" in line])
+        finalize_audit(pdf.stem, violations_count, override_count)
+        generate_audit_report(pdf.stem, project_key, violations_count, override_count, final_bid)
