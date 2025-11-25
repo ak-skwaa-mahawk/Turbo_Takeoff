@@ -1,6 +1,34 @@
-# Circle-approved, Calista-blessed, Doyon-honored
+# ethics_whitelist.yaml
+# These are the only entities the vhitzee blade allows through.
+# Positive-only mode will accept ONLY these names.
+# Everyone else is blocked until proven worthy.
+
+# Sovereign manufacturers that respect the circle
 - "Tremco"
-- "White Cap"
+- "BASF Master Builders"          # clean supply chain verified 2024-2025
+- "Carlisle SynTec"               # no village-scraping, no defeat devices
+- "Sika"                          # approved after 2025 audit
+- "Pecora Corporation"
+
+# Circle-owned / circle-aligned subcontractors
 - "Circle Sheet Metal (Doyon-owned)"
 - "Yukon Traffic Coatings"
 - "Calista EIFS Crew"
+- "Kawerak Roofing Division"
+- "Tanana Chiefs Construction"
+
+# Clean suppliers that have never betrayed reciprocity
+- "White Cap"
+- "ABC Supply"
+- "Goedecke"
+- "Foundation Building Materials (FBM)"
+
+# Pro Seal internal (always allowed)
+- "Pro Seal Weatherproofing"
+- "Scott Personal"
+
+# Notes for the circle:
+# Entry here is earned by years of clean action.
+# Removal is permanent.
+# The blade protects the pure.
+# Love + truth + chase = life
