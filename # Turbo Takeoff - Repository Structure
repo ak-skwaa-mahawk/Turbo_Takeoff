@@ -1,0 +1,197 @@
+# Turbo Takeoff - Repository Structure
+
+```
+Turbo_Takeoff/
+├── README.md
+├── LICENSE (FPT - Attribution Required)
+├── .gitignore
+├── package.json
+├── 
+├── frontend/
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── manifest.json (PWA)
+│   │   └── service-worker.js (offline support)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Upload.jsx
+│   │   │   ├── Processing.jsx
+│   │   │   ├── TakeoffReview.jsx
+│   │   │   ├── PricingEntry.jsx
+│   │   │   ├── EthicsScore.jsx
+│   │   │   ├── SupplierManager.jsx
+│   │   │   └── OutputGeneration.jsx
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.jsx
+│   │   │   └── TakeoffContext.jsx
+│   │   ├── hooks/
+│   │   │   ├── useSupabase.js
+│   │   │   ├── useClaude.js
+│   │   │   └── useEthicsDB.js
+│   │   ├── utils/
+│   │   │   ├── pdfParser.js
+│   │   │   ├── excelExport.js
+│   │   │   ├── docxExport.js
+│   │   │   └── resonanceCalculator.js
+│   │   ├── App.jsx
+│   │   ├── index.js
+│   │   └── styles/
+│   │       └── tailwind.css
+│   └── package.json
+│
+├── backend/
+│   ├── supabase/
+│   │   ├── migrations/
+│   │   │   ├── 001_initial_schema.sql
+│   │   │   ├── 002_ethics_database.sql
+│   │   │   └── 003_pricing_history.sql
+│   │   └── functions/
+│   │       ├── process-takeoff/
+│   │       │   ├── index.ts
+│   │       │   └── claude-integration.ts
+│   │       ├── calculate-resonance/
+│   │       │   └── index.ts
+│   │       └── scrape-ethics-data/
+│   │           └── index.ts
+│   └── api/
+│       ├── claude-proxy.js
+│       └── ethics-scraper.js
+│
+├── ethics-database/
+│   ├── schemas/
+│   │   ├── company.json
+│   │   ├── resonance-criteria.json
+│   │   └── user-report.json
+│   ├── sources/
+│   │   ├── iaca-scraper.py
+│   │   ├── bbb-api.js
+│   │   ├── osha-scraper.py
+│   │   ├── epa-scraper.py
+│   │   └── ancsa-list.json
+│   └── scripts/
+│       ├── update-database.sh
+│       └── calculate-scores.py
+│
+├── exports/
+│   ├── templates/
+│   │   ├── takeoff-template.xlsx
+│   │   └── proposal-template.docx
+│   └── generators/
+│       ├── excel-generator.js
+│       └── docx-generator.js
+│
+├── docs/
+│   ├── SETUP.md
+│   ├── API.md
+│   ├── ETHICS_DATABASE.md
+│   ├── DEPLOYMENT.md
+│   └── ROADMAP.md
+│
+└── tests/
+    ├── frontend/
+    ├── backend/
+    └── integration/
+```
+
+## Key Files Description
+
+### Frontend
+- **components/**: Modular React components for each step
+- **contexts/**: Global state management (Auth, Takeoff data)
+- **hooks/**: Custom hooks for Supabase, Claude API, Ethics DB
+- **utils/**: PDF parsing, Excel/DOCX export, resonance calculations
+
+### Backend
+- **supabase/migrations/**: Database schema and tables
+- **supabase/functions/**: Edge functions for AI processing
+- **api/**: Proxy endpoints and external data scrapers
+
+### Ethics Database
+- **schemas/**: JSON schemas for company data, resonance scoring
+- **sources/**: Python/JS scrapers for IACA, BBB, OSHA, EPA
+- **scripts/**: Automated updates and score calculations
+
+### Exports
+- **templates/**: Base Excel/Word templates
+- **generators/**: Code to populate templates with takeoff data
+
+## Tech Stack
+
+**Frontend:**
+- React 18 + TypeScript
+- Tailwind CSS
+- Vite (build tool)
+- PDF.js (client-side PDF parsing)
+- SheetJS (Excel generation)
+- docx (Word generation)
+
+**Backend:**
+- Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- Anthropic Claude API (AI takeoff processing)
+- Deno (for edge functions)
+
+**Ethics Database:**
+- Python (web scrapers)
+- Node.js (API integrations)
+- PostgreSQL (data storage)
+- Cron jobs (automated updates)
+
+**Deployment:**
+- Vercel (frontend hosting)
+- Supabase (managed backend)
+- GitHub Actions (CI/CD)
+
+## Environment Variables
+
+```env
+# Supabase
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Anthropic Claude
+ANTHROPIC_API_KEY=your-api-key
+
+# Ethics Data Sources
+BBB_API_KEY=your-bbb-key
+OSHA_API_ENDPOINT=https://enforcedata.dol.gov/views/data_catalogs.php
+
+# Stripe (payments)
+STRIPE_PUBLIC_KEY=your-public-key
+STRIPE_SECRET_KEY=your-secret-key
+```
+
+## Getting Started
+
+```bash
+# Clone repository
+git clone https://github.com/ak-skwaa-mahawk/Turbo_Takeoff.git
+cd Turbo_Takeoff
+
+# Install frontend dependencies
+cd frontend
+npm install
+
+# Install backend dependencies
+cd ../backend
+npm install
+
+# Set up Supabase
+# 1. Create project at supabase.com
+# 2. Run migrations: supabase db push
+# 3. Deploy edge functions: supabase functions deploy
+
+# Start development
+cd ../frontend
+npm run dev
+```
+
+## License
+
+© 2025 Two Mile Solutions LLC - John Carroll
+
+Released under Feedback Processor Theory open collaborative license.
+Attribution required for derivative or applied works.
+
+> "Systems that know themselves can never be owned — only understood."
+> — Feedback Processor Theory, 2025
