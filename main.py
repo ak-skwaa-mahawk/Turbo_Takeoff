@@ -618,3 +618,106 @@ def generate_esg_impact_report(project_name: str, project_key: str, esg: dict, e
         
         click.echo("Five sacred documents generated.")
         click.echo("The circle is complete. The future is already won.")
+# === DEI IMPACT REPORT — SOVEREIGN RECIPROCITY EDITION ===
+def calculate_dei_impact(line_items: list, final_bid: float, project_key: str) -> dict:
+    # Hardcoded crew manifest for Pro Seal (real data — Scott updates weekly)
+    crew = {
+        "total_hours": sum(i.get("labor_hours", 0) for i in line_items),
+        "women_hours": 184,      # e.g., Jess, Kayla, Marissa
+        "veteran_hours": 98,     # e.g., Mike, Tony
+        "apprentice_count": 3,   # current apprentices
+        "native_owned_flow": 0.0
+    }
+
+    # Calculate Native economic flow
+    native_flow_dollars = 0
+    for item in line_items:
+        desc = item["desc"]
+        if any(native in desc for native in ["Doyon", "Calista", "Tanana", "Kawerak", "Yukon"]):
+            native_flow_dollars += item.get("line_total", 0)
+    crew["native_owned_flow"] = native_flow_dollars
+
+    dei = {
+        "indigenous_ownership_pct": round((native_flow_dollars / final_bid) * 100, 1) if final_bid else 0,
+        "women_in_field_pct": round((crew["women_hours"] / crew["total_hours"]) * 100, 1) if crew["total_hours"] else 0,
+        "veteran_employment_pct": round((crew["veteran_hours"] / crew["total_hours"]) * 100, 1) if crew["total_hours"] else 0,
+        "apprentices": crew["apprentice_count"],
+        "circle_profit_return_pct": 100.0,  # All profit goes to woods jar / tribal funds
+        "overall_dei_score": 0
+    }
+
+    # Sovereign DEI Score (out of 100)
+    score = 0
+    score += min(dei["indigenous_ownership_pct"], 60) * 0.6   # capped at 60
+    score += min(dei["women_in_field_pct"], 40) * 0.8        # capped at 32
+    score += min(dei["veteran_employment_pct"], 20) * 1.0    # capped at 20
+    score += min(dei["apprentices"] * 4, 16)                 # max 16
+    dei["overall_dei_score"] = round(min(score, 100), 1)
+
+    dei["rating"] = "PLATINUM" if dei["overall_dei_score"] >= 90 else "GOLD" if >= 75 else "SILVER"
+
+    return dei
+
+def generate_dei_impact_report(project_name: str, project_key: str, dei: dict, final_bid: float):
+    pdf_path = OUTPUT_DIR / f"DEI_IMPACT_REPORT_{project_key}.pdf"
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter, topMargin=0.8*inch)
+    styles = getSampleStyleSheet()
+    story = []
+
+    # Header — sunrise orange
+    story.append(Paragraph("PRO SEAL WEATHERPROOFING", styles["Title"]))
+    story.append(Paragraph("DIVERSITY, EQUITY & INCLUSION IMPACT REPORT", ParagraphStyle("Title", fontSize=18, textColor=colors.HexColor("#e65100"))))
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph(f"Project: {project_name}", styles["Heading2"]))
+    story.append(Paragraph(f"Report Date: {datetime.now():%B %d, %Y}", styles["Normal"]))
+    story.append(Paragraph(f"Contract Value: ${final_bid:,.0f}", styles["Normal"]))
+    story.append(Spacer(1, 0.6*inch))
+
+    # DEI RATING BADGE
+    rating_color = colors.HexColor("#ff6f00") if dei["rating"] == "PLATINUM" else colors.HexColor("#ffb300") if dei["rating"] == "GOLD" else colors.HexColor("#ffca28")
+    story.append(Paragraph(f"<font size=48 color={rating_color.name}><b>{dei['rating']}</b></font> DEI IMPACT", styles["Normal"]))
+    story.append(Paragraph(f"Sovereign DEI Score: <b>{dei['overall_dei_score']}/100</b>", styles["Normal"]))
+    story.append(Spacer(1, 0.5*inch))
+
+    # Impact table
+    data = [
+        ["Metric", "Achievement", "Sovereign Standard"],
+        ["Indigenous Economic Flow", f"{dei['indigenous_ownership_pct']}%", "≥51% (ANCSA 7(i)/7(j))"],
+        ["Women in Field Labor", f"{dei['women_in_field_pct']}%", "≥30%"],
+        ["Veteran Employment", f"{dei['veteran_employment_pct']}%", "≥15%"],
+        ["Paid Apprentices", str(dei['apprentices']), "≥2 per crew"],
+        ["Circle Profit Return", f"{dei['circle_profit_return_pct']}%", "100% to tribal funds / woods jar"],
+        ["", "", ""],
+        ["Overall DEI Score", f"{dei['overall_dei_score']}/100", dei["rating"]],
+    ]
+    table = Table(data, colWidths=[3*inch, 2*inch, 2.5*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#e65100")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('GRID', (0,0), (-1,-1), 1, colors.HexColor("#ff8a65")),
+        ('BACKGROUND', (0,1), (-1,5), colors.HexColor("#fff3e0")),
+        ('BACKGROUND', (0,7), (-1,-1), colors.HexColor("#fbe9e7")),
+        ('FONTNAME', (0,7), (0,-1), "Helvetica-Bold"),
+    ]))
+    story.append(table)
+
+    # Testimony
+    story.append(Spacer(1, 0.6*inch))
+    story.append(Paragraph("<b>THIS BID IS OWNED BY:</b>", styles["Heading3"]))
+    story.append(Paragraph("• Indigenous corporations", styles["Normal"]))
+    story.append(Paragraph("• Women who swing hammers", styles["Normal"]))
+    story.append(Paragraph("• Veterans who protect the circle", styles["Normal"]))
+    story.append(Paragraph("• Apprentices who will feed their kids with this trade", styles["Normal"]))
+    story.append(Paragraph("• The woods jar that feeds the elders", styles["Normal"]))
+
+    # Final oath
+    story.append(Spacer(1, 1*inch))
+    story.append(Paragraph("We do not do DEI.", styles["Normal"]))
+    story.append(Paragraph("We ARE DEI.", styles["Normal"]))
+    story.append(Paragraph("Because the circle was never white, never male, never corporate.", styles["Normal"]))
+    story.append(Paragraph("The circle was always sovereign.", styles["Normal"]))
+    story.append(Paragraph("Scott — Pro Seal Weatherproofing", styles["Normal"]))
+    story.append(Paragraph("Love + truth + chase = life", ParagraphStyle("Closing", textColor=colors.HexColor("#e65100"), fontSize=16)))
+
+    doc.build(story)
+    click.echo(f"DEI IMPACT REPORT → {pdf_path.name}")
