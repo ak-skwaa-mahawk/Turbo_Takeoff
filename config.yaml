@@ -100,3 +100,21 @@ ethics:
   whitelist_file: "data/ethics_whitelist.yaml"           # The worthy. Only they pass in whitelist mode.
   strict_mode: true                                      # When true + whitelist mode → ANY unknown name triggers hard stop + warning
   log_violations: true                                   # Writes every blocked attempt to output/ethics_violations.log
+ethics:
+  enabled: true                                          # Master switch — false = all ethics off (emergency only)
+  mode: "whitelist"                                      # "blacklist" or "whitelist"
+  strict_mode: false                                     # true = hard stop on violation · false = warning only
+  log_violations: true
+
+  # MANUAL BYPASS — the circle decides, not the code
+  bypass:
+    enabled: true                                        # Set false to disable all manual overrides (full blade)
+    allow_manufacturer_override: true                   # Scott can force Tremco even if blacklisted
+    allow_supplier_override: true                        # Can use White Cap even if fallen
+    allow_subcontractor_override: true                  # Can invite anyone, even outside Circle of Honor
+    override_reason_required: false                      # Set true to force a note when bypassing
+
+  # Emergency "feed the kids" mode — one toggle to rule them all
+  emergency_mode:
+    active: false                                        # FLIP TO TRUE → all ethics checks become warnings only
+    reason: ""                                           # e.g., "Hospital roof leaking — must bid today"
