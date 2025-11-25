@@ -1,4 +1,4 @@
-# === SOVEREIGN ETHICS ENGINE — FINAL INTEGRATION ===
+BB84# === SOVEREIGN ETHICS ENGINE — FINAL INTEGRATION ===
 def load_ethics_lists():
     """Load blacklist/whitelist once at startup"""
     blacklist = set()
@@ -116,3 +116,48 @@ def build_line_items(takeoff: dict, region: str, project_key: str):
                 click.echo(f"   → Sub {sub['name']} BLOCKED by vhitzee blade")
 
     return items
+def is_entity_allowed(entity_name: str, entity_type: str, bypass_reason: str = "") -> bool:
+    if not cfg["ethics"]["enabled"]:
+        return True
+
+    # Emergency mode = warnings only, never blocks
+    if cfg["ethics"]["emergency_mode"]["active"]:
+        click.echo(f"   EMERGENCY MODE: {entity_name} allowed ({cfg['ethics']['emergency_mode']['reason']})")
+        return True
+
+    # Manual bypass per category
+    bypass_cfg = cfg["ethics"]["bypass"]
+    if bypass_cfg["enabled"]:
+        override_key = f"allow_{entity_type}_override"
+        if bypass_cfg.get(override_key, False):
+            reason = bypass_reason or "manual override"
+            click.echo(f"   SOVEREIGN OVERRIDE: {entity_name} allowed — {reason}")
+            return True
+
+    # Normal ethics blade (only runs if no override)
+    name = entity_name.strip().split()[0] if entity_type == "manufacturer" else entity_name
+    mode = cfg["ethics"].get("mode", "blacklist")
+
+    if mode == "blacklist":
+        if name in BLACKLIST:
+            msg = f"   VHITZEE BLADE: {name} BLOCKED (blacklisted)"
+            if cfg["ethics"]["strict_mode"]:
+                click.echo(msg)
+                raise SystemExit(1)
+            else:
+                click.echo(msg + " — continuing (non-strict)")
+                return False
+        return True
+
+    elif mode == "whitelist":
+        if name not in WHITELIST:
+            msg = f"   VHITZEE BLADE: {name} REJECTED — not in Circle of Honor"
+            if cfg["ethics"]["strict_mode"]:
+                click.echo(msg)
+                raise SystemExit(1)
+            else:
+                click.echo(msg + " — continuing (non-strict)")
+                return False
+        return True
+
+    return True
