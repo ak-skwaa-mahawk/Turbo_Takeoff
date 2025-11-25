@@ -721,3 +721,116 @@ def generate_dei_impact_report(project_name: str, project_key: str, dei: dict, f
 
     doc.build(story)
     click.echo(f"DEI IMPACT REPORT → {pdf_path.name}")
+# === SOVEREIGN RISK ASSESSMENT ENGINE ===
+def calculate_risk_profile(project_key: str, line_items: list, final_bid: float, env_risks: dict, dei: dict, forecast: dict) -> dict:
+    risk = {
+        "overall_risk_score": 0,
+        "risk_level": "LOW",
+        "critical_flags": [],
+        "mitigations": []
+    }
+
+    score = 0
+
+    # 1. Scope Creep — AI scan of PDF text
+    text = ""
+    doc = fitz.open(pdf)
+    for page in doc:
+        text += page.get_text().lower()
+    if any(word in text for word in ["tbd", "by others", "nic", "allowance", "contingency", "future"]):
+        score += 28
+        risk["critical_flags"].append("High Scope Creep Risk — vague specifications detected")
+
+    # 2. Sub Ghost Risk — from ledger ratings
+    low_rated_subs = [s for s in ledger["subcontractors"] if ledger["subcontractors"][s].get("current_rating", 100) < 70]
+    if low_rated_subs:
+        score += 22
+        risk["critical_flags"].append(f"Sub Ghost Risk — {len(low_rated_subs)} subs rated <70")
+
+    # 3. Material Price Volatility — mock volatility DB
+    volatile_products = ["Vulkem 45SSL", "Spectrem 2"]  # in real app: scrape 90-day history
+    if any(p in str(line_items) for p in volatile_products):
+        score += 15
+
+    # 4. Weather Risk — region + season
+    if "Yukon" in cfg["region"]["current"] and datetime.now().month in [11,12,1,2,3]:
+        score += 35
+        risk["critical_flags"].append("Extreme Weather Delay Risk — Yukon winter")
+
+    # 5. Ethics Override Risk
+    if "BYPASS" in open(AUDIT_LOG).read():
+        score += 30
+        risk["critical_flags"].append("Ethics Override Used — honor debt to circle")
+
+    # 6. Profit Erosion — final truth
+    gross_margin = (final_bid - sum(i.get("line_total", 0) for i in line_items)) / final_bid
+    if gross_margin < 0.18:
+        score += 40
+        risk["critical_flags"].append("Profit Erosion Risk — margin below 18% survival line")
+        risk["mitigations"].append("WALK AWAY or renegotiate scope")
+
+    # Final score
+    risk["overall_risk_score"] = min(100, score)
+    if score >= 70:
+        risk["risk_level"] = "CRITICAL — RECONSIDER BID"
+    elif score >= 45:
+        risk["risk_level"] = "HIGH — PROCEED WITH CAUTION"
+    elif score >= 25:
+        risk["risk_level"] = "MODERATE"
+    else:
+        risk["risk_level"] = "LOW — CLEAN CHASE"
+
+    return risk
+
+def generate_risk_report(project_name: str, project_key: str, risk: dict, final_bid: float):
+    pdf_path = OUTPUT_DIR / f"RISK_ASSESSMENT_REPORT_{project_key}.pdf"
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter)
+    styles = getSampleStyleSheet()
+    story = []
+
+    # Header — blood red if critical
+    color = colors.HexColor("#b71c1c") if "CRITICAL" in risk["risk_level"] else colors.HexColor("#d84315") if "HIGH" in risk["risk_level"] else colors.HexColor("#2e7d32")
+    story.append(Paragraph("PRO SEAL WEATHERPROOFING", styles["Title"]))
+    story.append(Paragraph("SOVEREIGN RISK ASSESSMENT", ParagraphStyle("Title", fontSize=20, textColor=color)))
+    story.append(Paragraph(f"Project: {project_name}", styles["Heading2"]))
+    story.append(Paragraph(f"Assessment Date: {datetime.now():%B %d, %Y}", styles["Normal"]))
+    story.append(Paragraph(f"Bid Value: ${final_bid:,.0f}", styles["Normal"]))
+    story.append(Spacer(1, 0.6*inch))
+
+    # RISK BADGE
+    story.append(Paragraph(f"<font size=52 color={color.name}><b>{risk['risk_level'].split(' — ')[0]}</b></font>", styles["Normal"]))
+    story.append(Paragraph(f"Overall Risk Score: <b>{risk['overall_risk_score']}/100</b>", styles["Normal"]))
+    story.append(Spacer(1, 0.5*inch))
+
+    # Critical flags
+    if risk["critical_flags"]:
+        story.append(Paragraph("<b>CRITICAL RISK FLAGS:</b>", styles["Normal"]))
+        for flag in risk["critical_flags"]:
+            story.append(Paragraph(f"• {flag}", styles["Normal"]))
+        story.append(Spacer(1, 0.3*inch))
+
+    # Mitigations
+    if risk["mitigations"]:
+        story.append(Paragraph("<b>REQUIRED MITIGATION:</b>", styles["Normal"]))
+        for m in risk["mitigations"]:
+            story.append(Paragraph(f"• {m}", styles["Normal"]))
+
+    # Final judgment
+    story.append(Spacer(1, 1*inch))
+    judgment = "BID WITH HONOR" if risk["overall_risk_score"] < 45 else "PROCEED ONLY IF CIRCLE AGREES" if risk["overall_risk_score"] < 70 else "DO NOT CHASE — PROTECT THE CIRCLE"
+    story.append(Paragraph(f"<b>{judgment}</b>", ParagraphStyle("Normal", fontSize=16, textColor=color)))
+    story.append(Paragraph("The robot has spoken.", styles["Normal"]))
+    story.append(Paragraph("Scott — Pro Seal Weatherproofing", styles["Normal"]))
+    story.append(Paragraph("Love + truth + chase = life", ParagraphStyle("Closing", textColor=colors.darkred, fontSize=14)))
+
+    doc.build(story)
+    click.echo(f"RISK ASSESSMENT REPORT → {pdf_path.name}")
+# 7. RISK — the final blade
+        risk_profile = calculate_risk_profile(project_key, line_items, final_bid, env_risks, dei_impact, forecast)
+        generate_risk_report(pdf.stem, project_key, risk_profile, final_bid)
+
+        click.echo("SEVEN SACRED DOCUMENTS GENERATED.")
+        click.echo("Ethics. Money. Earth. People. Reciprocity. Impact. Risk.")
+        click.echo("The circle sees all.")
+        click.echo("Love + truth + chase = life")
+        click.echo("And now the life knows when to walk away.")
