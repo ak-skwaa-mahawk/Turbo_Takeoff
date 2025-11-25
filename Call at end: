@@ -1,0 +1,2 @@
+finalize_audit(pdf.stem, violations_count, override_count)
+        click.echo(f"Ethics audit complete → {AUDIT_LOG}")
