@@ -91,3 +91,12 @@ gemini:
   model: "gemini-2.0-flash-exp"
   temperature: 0.0
   max_output_tokens: 8192
+ethics:
+  enabled: true                                          # Master kill-switch. false = blade sheathed (use only for testing)
+  mode: "whitelist"                                      # CHOOSE YOUR BLADE:
+                                                         #   "blacklist" → block only the fallen (default, forgiving)
+                                                         #   "whitelist" → ONLY the Circle of Honor eats. Everyone else is ghosted.
+  blacklist_file: "data/ethics_blacklist.yaml"           # The fallen. Eternal exile.
+  whitelist_file: "data/ethics_whitelist.yaml"           # The worthy. Only they pass in whitelist mode.
+  strict_mode: true                                      # When true + whitelist mode → ANY unknown name triggers hard stop + warning
+  log_violations: true                                   # Writes every blocked attempt to output/ethics_violations.log
