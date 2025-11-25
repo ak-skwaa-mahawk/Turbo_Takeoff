@@ -1318,3 +1318,45 @@ ethics_clean = bedrock_ethics_rag("Tremco in 417?")
 takeoff = bedrock_takeoff_agent("Zero-shot QTO: Tremco joints ethically", img_b64)
 opt = lambda_optimizer_agent({'tasks': baseline['tasks']})
 # Export to S3: s3_client.upload_file(pdf_path, 'proseal-bucket', f"{project_key}/nine-seals/")
+# Takenaka Sovereign Twins — Bedrock RAG + TwinMaker (Offline Hybrid)
+import boto3  # Bedrock/TwinMaker client
+from botocore.exceptions import ClientError
+
+# Init (optional AWS—fallback local)
+try:
+    bedrock = boto3.client('bedrock-runtime', region_name='us-west-2')
+    twinning = boto3.client('iot-twinmaker', region_name='us-west-2')  # Digital twins
+    s3 = boto3.client('s3')
+    AWS_ENABLED = True
+except ClientError:
+    AWS_ENABLED = False
+    click.echo("Offline mode: Local Gemini + Chroma")
+
+def bedrock_reg_query(prompt: str, docs_b64: str) -> dict:
+    """Kendra-like RAG: Query regs/best practices (Takenaka-style)"""
+    if AWS_ENABLED:
+        body = json.dumps({
+            "promptConfig": {"temperature": 0.0},
+            "inferenceConfig": {"maxTokens": 512},
+            "messages": [{"role": "user", "content": [{"type": "text", "text": f"Takenaka best practice: {prompt}"}]}]
+        })
+        resp = bedrock.invoke_model(body=body, modelId='anthropic.claude-3-sonnet-20240229-v1:0', accept='application/json')
+        return json.loads(resp['body'].read())  # {'best_practice': 'Tremco low-VOC, 417 compliant'}
+    else:
+        return {'best_practice': 'Local fallback: Check ethics.yaml'}  # Offline
+
+def twinning_sim(takeoff: dict, weather_factor: float = 1.0) -> dict:
+    """IoT TwinMaker sim: Predictive QTO (e.g., Yukon winter adjust)"""
+    if AWS_ENABLED:
+        # Entity: 'proseal-twin' workspace
+        resp = twinning.get_entity(entityId='sealant-joint', workspaceId='proseal-workspace')
+        adjusted = {k: v * weather_factor for k, v in takeoff.items()}  # e.g., +20% labor in snow
+        twinning.update_entity(entityId='sim-result', workspaceId='proseal-workspace', body=adjusted)
+        return adjusted  # {'sealant_lf': 3416} — 20% uplift
+    else:
+        return {k: v * weather_factor for k, v in takeoff.items()}  # Local PuLP fallback
+
+# In run(): Takenaka Twin Ritual
+reg_insight = bedrock_reg_query("PFAS-free sealants in 417 fog?", ethics_yaml_b64)  # YAML to b64
+takeoff_adjusted = twinning_sim(total, weather=1.2)  # Yukon factor
+s3.upload_file(pdf_path, 'proseal-bucket', f"{project_key}/nine-seals/audit.pdf")  # Export seals
