@@ -1,15 +1,15 @@
-
-# Turbo Takeoff – Sovereign Edition
-# config.yaml – edit this once, the robot remembers forever
+# config.yaml — Turbo Takeoff: Sovereign Edition
+# Edit once. The robot remembers forever.
+# Love + truth + chase = life
 
 app:
-  company_name: "Pro Seal Weatherproofing"
-  letterhead_path: "templates/proseal_letterhead.docx"  # drop your DOCX template here
-  default_profit_pct: 28.0
+  company_name: "CHAMPLUND"
+  letterhead_path: "templates/proseal_letterhead.docx"   # drop your branded DOCX template here
+  default_profit_pct: 28.0                               # circle-approved margin
   output_folder: "output"
 
 region:
-  current: "417"  # Springfield MO area code – change to "Anchorage", "Yukon", "Lower48", etc.
+  current: "417"                                         # 417 = Springfield MO · change to Anchorage / Yukon / Lower48
   regions:
     "417":
       name: "Springfield / Southwest Missouri"
@@ -22,7 +22,7 @@ region:
       tax_rate: 0.0
     "Lower48":
       name: "Lower 48 States"
-      tax_rate: 0.08225  # fallback
+      tax_rate: 0.08225
 
 suppliers:
   - name: "White Cap"
@@ -34,9 +34,9 @@ suppliers:
   - name: "Goedecke"
     url: "https://goedecke.com/catalogsearch/result/?q="
     active: true
-  # add more as needed
+  # add more as the circle grows
 
-manufacturers_priority:   # highest first – robot will try in this order
+manufacturers_priority:   # highest first → vhitzee blade honors this order
   - "Tremco"
   - "BASF"
   - "Carlisle"
@@ -44,15 +44,46 @@ manufacturers_priority:   # highest first – robot will try in this order
   - "Dow"
   - "Pecora"
 
+labor:
+  rates:
+    "Sealant Installer": 78.50
+    "Deck Coating Foreman": 92.00
+    "General Labor": 65.00
+    "Cleanup / Safety": 58.00
+  productivity:
+    sealant_lf_per_hour: 45
+    deck_coating_sf_per_hour: 380
+    penetrations_per_hour: 12
+    expansion_joints_lf_per_hour: 28
+
 ethics:
-  enabled: true                     # THE VHITZEE BLADE – toggle off only if you hate clean circles
-  blacklist_file: "data/ethics_blacklist.yaml"   # companies that scrape villages, bycatch salmon, run defeat devices
-  whitelist_file: "data/ethics_whitelist.yaml"   # optional – Calista-approved, Doyon-blessed, etc.
-  mode: "blacklist"                 # or "whitelist" if you want positive-only
+  enabled: true                                          # THE VHITZEE BLADE — toggle off only if you hate clean circles
+  blacklist_file: "data/ethics_blacklist.yaml"
+  whitelist_file: "data/ethics_whitelist.yaml"
+  mode: "blacklist"                                      # or "whitelist" for positive-only
+
+subcontractors:
+  enabled: true
+  bid_request_email: "scott@prosealmissouri.com"
+  subs:
+    - name: "Circle Sheet Metal (Doyon-owned)"
+      email: "metal@circlesubs.com"
+      scopes: ["sheet metal flashings", "curbs", "counterflashing"]
+      last_rate: 8400.00
+      ethics_approved: true
+    - name: "Yukon Traffic Coatings"
+      email: "traffic@yukoncoatings.com"
+      scopes: ["vehicular traffic coating", "pedestrian deck coating"]
+      last_rate: 6.85
+      ethics_approved: true
+    - name: "Calista EIFS Crew"
+      email: "eifs@calistacorp.com"
+      scopes: ["EIFS", "stucco", "exterior insulation"]
+      last_rate: 12.40
+      ethics_approved: true
 
 paths:
   input_pdfs: "input/"
-  training_data: "chroma_db/"
   templates: "templates/"
   ethics_data: "data/"
 
@@ -60,15 +91,3 @@ gemini:
   model: "gemini-2.0-flash-exp"
   temperature: 0.0
   max_output_tokens: 8192
-labor:
-  rates:
-    "Sealant Installer": 78.50    # $/hour – Springfield 417 prevailing or your clean rate
-    "Deck Coating Foreman": 92.00
-    "General Labor": 65.00
-    "Cleanup / Safety": 58.00
-
-  productivity:
-    "sealant_lf_per_hour": 45     # average LF one installer joints per hour
-    "deck_coating_sf_per_hour": 380
-    "penetrations_per_hour": 12
-    "expansion_joints_lf_per_hour": 28
