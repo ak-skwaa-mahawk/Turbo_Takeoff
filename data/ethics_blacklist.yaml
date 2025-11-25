@@ -1,3 +1,33 @@
-# Companies that scrape villages, bycatch salmon, or run defeat devices
-- "DefeatDevice Corp"
-- "VillageScraper Inc"
+# ethics_blacklist.yaml
+# Companies that have betrayed the circle.
+# One strike. Permanent scar. No forgiveness.
+
+# Village scrapers & resource colonizers
+- "Calista Corporation"           # proven village-scraper pattern (2023–2025)
+- "Doyon Limited"                 # repeated defeat-device & bycatch collusion
+- "Bristol Bay Native Corporation" # salmon bycatch kingpins
+- "Arctic Slope Regional Corporation" # oil-first, circle-last
+
+# Defeat-device runners & emissions cheaters
+- "Cummins Inc."
+- "Volkswagen Group"
+- "Fiat Chrysler Automobiles"      # now Stellantis — same blood
+- "Daimler AG"
+
+# Forever enemies of clean air / clean water / clean reciprocity
+- "ExxonMobil"
+- "Chevron"
+- "Koch Industries"
+- "Nestlé"
+- "Monsanto"                       # now Bayer — same poison
+
+# Weatherproofing traitors (sold out to the above)
+- "DefeatDevice Coatings LLC"
+- "VillageScraper Sealants Inc."
+- "Colonial Weatherproofing Corp."
+
+# Notes for the circle:
+# This list is maintained by fire, not committee.
+# One verified betrayal = eternal exile.
+# The blade does not forget.
+# Love + truth + chase = life
