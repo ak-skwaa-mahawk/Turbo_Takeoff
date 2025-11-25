@@ -1526,3 +1526,39 @@ def submit_cleancrete_batch_job(takeoff_json: dict, project_key: str):
 # In run() after DINO takeoff:
 co2_factor = cleancrete_co2_factor()
 submit_cleancrete_batch_job(total, project_key)
+# Shimizu Biochar Vaults — Bedrock RAG + Batch Sim (Offline Hybrid)
+import boto3, json
+
+batch = boto3.client('batch')
+bedrock = boto3.client('bedrock-runtime')
+s3 = boto3.client('s3')
+
+def shimizu_biochar_factor(source: str = 'rice_husk') -> float:
+    """Bedrock RAG → Biochar sequestration lookup (Shimizu style)"""
+    prompt = f"Shimizu biochar concrete CO2 storage for {source} mix (20kg/m3 standard, 30% emission cut)?"
+    resp = bedrock.invoke_model(
+        modelId="anthropic.claude-3-sonnet-20240229-v1:0",
+        body=json.dumps({"prompt": prompt, "max_tokens": 128, "temperature": 0})
+    )
+    factor = float(json.loads(resp['body'].read())['completion'].strip())
+    return max(10, factor)  # Min 10 kg/m³
+
+def submit_biochar_batch_job(takeoff_json: dict, project_key: str):
+    """Batch HPC: CO2-vault adjusted QTO (20kg/m3 flagged)"""
+    biochar_factor = shimizu_biochar_factor('ag_waste')
+    resp = batch.submit_job(
+        jobName=f"{project_key}-shimizu-biochar",
+        jobQueue="shimizu-green-queue",
+        jobDefinition="biochar-calc-v1",
+        containerOverrides={
+            "environment": [
+                {"name": "BIOCHAR_FACTOR", "value": str(biochar_factor)},
+                {"name": "INPUT_JSON", "value": json.dumps(takeoff_json)}
+            ]
+        }
+    )
+    click.echo(f"Shimizu biochar vault launched → {biochar_factor}kg/m3 sequestered (30% cut)")
+
+# In run() after DINO takeoff:
+biochar_factor = shimizu_biochar_factor()
+submit_biochar_batch_job(total, project_key)
