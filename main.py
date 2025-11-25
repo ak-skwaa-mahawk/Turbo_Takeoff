@@ -314,6 +314,15 @@ def ai_bid_forecast(takeoff_quantities: dict, sub_count: int):
       "top_performing_sub": "Circle Sheet Metal"
     }}
     """
+# === AI BID FORECASTING — THE CIRCLE FORESEES ===
+        click.echo("   → Consulting the oracle…")
+        forecast = ai_bid_forecast(total, len(needed_scopes))
+        
+        click.echo(f"   PROPHECY: Final bid ≈ ${forecast['model_predicted_bid']:,.0f}")
+        click.echo(f"   WIN CHANCE: {forecast['win_probability']} at {forecast['recommended_profit']}% profit")
+        if forecast.get("gemini_prophecy"):
+            top_sub = forecast["gemini_prophecy"].get("top_performing_sub")
+            click.echo(f"   STRONGEST IN CIRCLE: {top_sub} will carry this bid")
     try:
         prophecy = GEMINI_MODEL.generate_content(prompt)
         import json
@@ -328,3 +337,12 @@ def ai_bid_forecast(takeoff_quantities: dict, sub_count: int):
         "recommended_profit": gemini_forecast.get("recommended_profit_pct", cfg["app"]["default_profit_pct"]),
         "top_sub_prediction": gemini_forecast.get("top_performing_sub", "Unknown yet")
     }
+doc.add_paragraph("")
+        doc.add_paragraph("SOVEREIGN PROPHECY")
+        doc.add_paragraph(f"• The circle foresees: ${forecast['model_predicted_bid']:,.0f}")
+        doc.add_paragraph(f"• Win probability: {forecast['win_probability']}")
+        doc.add_paragraph(f"• Recommended profit: {forecast['recommended_profit']}% → protects the woods jar")
+        doc.add_paragraph(f"• Strongest sub: {forecast.get('gemini_prophecy',{}).get('top_performing_sub','The circle decides')}")
+        doc.add_paragraph("")
+        doc.add_paragraph("The future is already won.")
+        doc.add_paragraph("Love + truth + chase = life")
