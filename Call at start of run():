@@ -1,0 +1,2 @@
+log_ethics_config()
+        audit_log("START", "project", pdf.name, "takeoff begun")
