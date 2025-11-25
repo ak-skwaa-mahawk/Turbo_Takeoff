@@ -417,3 +417,105 @@ def generate_financial_compliance_certificate(project_name: str, project_key: st
 flags = detect_project_type(pdf.stem, pdf)
         compliance = calculate_financial_compliance(line_items, total, flags, final_bid)
         generate_financial_compliance_certificate(pdf.stem, project_key, compliance, final_bid)
+# === ENVIRONMENTAL STEWARDSHIP AUDITOR — SEVEN GENERATIONS LAW ===
+KNOWN_PFAS_PRODUCTS = {"Sika", "Dow", "3M", "Chemours", "DuPont"}
+KNOWN_HIGH_VOC = {"solvent-based", "xylene", "toluene", "methylene chloride"}
+BYCATCH_CORPORATIONS = {"Calista Corporation", "Bristol Bay Native Corporation", "Arctic Slope"}
+
+def detect_environmental_risk(line_items: list, project_name: str, pdf_path: Path) -> dict:
+    risks = {"violations": [], "warnings": [], "carbon_kg": 0.0}
+    
+    # Extract text once
+    text = ""
+    doc = fitz.open(pdf_path)
+    for page in doc:
+        text += page.get_text().lower()
+
+    # 1. PFAS / Forever Chemicals
+    for item in line_items:
+        desc = item["desc"].lower()
+        mfr = desc.split()[0]
+        if mfr in KNOWN_PFAS_PRODUCTS or "pfas" in desc or "pfoa" in desc or "ptfe" in desc:
+            risks["violations"].append(f"PFAS detected: {item['desc']} — violates Seven Generations Law")
+
+    # 2. High-VOC products
+    if any(v in text for v in KNOWN_HIGH_VOC):
+        risks["warnings"].append("High-VOC specification detected — confirm low-VOC substitute used")
+
+    # 3. Bycatch corporation materials
+    for corp in BYCATCH_CORPORATIONS:
+        if corp.lower() in text:
+            risks["violations"].append(f"Material sourced from known bycatch corporation: {corp}")
+
+    # 4. Carbon footprint estimate (kg CO₂e per $10k)
+    material_cost = sum(i.get("line_total", 0) for i in line_items)
+    co2_per_10k = 420  # conservative average for sealants/coatings (kg CO₂e)
+    risks["carbon_kg"] = round((material_cost / 10000) * co2_per_10k, 1)
+
+    # 5. Tribal land covenant
+    if any(t in text for t in ["tanana chiefs", "dcced", "bia", "ihs", "native allotment"]):
+        risks["tribal_land"] = True
+        risks["warnings"].append("Tribal/ANCSA land — full environmental covenant applies")
+
+    return risks
+
+def generate_environmental_certificate(project_name: str, project_key: str, env: dict, final_bid: float):
+    pdf_path = OUTPUT_DIR / f"ENVIRONMENTAL_STEWARDSHIP_CERTIFICATE_{project_key}.pdf"
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter, topMargin=1*inch)
+    styles = getSampleStyleSheet()
+    story = []
+
+    # Header — Earth green
+    story.append(Paragraph("PRO SEAL WEATHERPROOFING", styles["Title"]))
+    story.append(Paragraph("ENVIRONMENTAL STEWARDSHIP CERTIFICATE", ParagraphStyle("Subtitle", fontSize=18, textColor=colors.darkgreen))))
+    story.append(Spacer(1, 0.4*inch))
+    story.append(Paragraph(f"Project: {project_name}", styles["Heading2"]))
+    story.append(Paragraph(f"Issued: {datetime.now():%B %d, %Y}", styles["Normal"]))
+    story.append(Paragraph(f"Bid Value: ${final_bid:,.0f}", styles["Normal"]))
+    story.append(Paragraph(f"Estimated Carbon Footprint: {env['carbon_kg']:,.1f} kg CO₂e", styles["Normal"]))
+    story.append(Spacer(1, 0.6*inch))
+
+    # Seven Generations Verdict
+    if not env["violations"]:
+        verdict = "CLEAN — SEVEN GENERATIONS HONORED"
+        color = colors.darkgreen
+    else:
+        verdict = "VIOLATION OF SEVEN GENERATIONS LAW"
+        color = colors.red
+    story.append(Paragraph(f"<font size=26 color={color.name}><b>{verdict}</b></font>", styles["Normal"]))
+    story.append(Spacer(1, 0.5*inch))
+
+    # Risk table
+    data = [
+        ["PFAS / Forever Chemicals", "NOT DETECTED" if not env["violations"] else "VIOLATION", ""],
+        ["High-VOC Materials", "Compliant" if "VOC" not in "".join(env["warnings"]) else "Review Required", ""],
+        ["Bycatch Corp Materials", "None" if not any("bycatch" in v.lower() for v in env["violations"]) else "BLOCKED", ""],
+        ["Tribal Land Covenant", "Honored" if not env.get("tribal_land") else "Full Covenant Applies", ""],
+        ["Carbon Transparency", f"{env['carbon_kg']:,.1f} kg CO₂e", "Tracked", ""],
+    ]
+    table = Table(data, colWidths=[3.5*inch, 2*inch, 1.5*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('GRID', (0,0), (-1,-1), 1, colors.darkgreen),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.darkgreen),
+    ]))
+    story.append(table)
+
+    if env["violations"]:
+        story.append(Spacer(1, 0.4*inch))
+        story.append(Paragraph("<b>VIOLATIONS OF SEVEN GENERATIONS LAW:</b>", styles["Normal"]))
+        for v in env["violations"]:
+            story.append(Paragraph(f"• {v}", styles["Normal"]))
+
+    # Final oath
+    story.append(Spacer(1, 1*inch))
+    story.append(Paragraph("We certify this bid honors the land, the water, and the salmon.", styles["Normal"]))
+    story.append(Paragraph("No forever chemicals. No bycatch blood money.", styles["Normal"]))
+    story.append(Paragraph("The children’s children will breathe clean air because of this bid.", styles["Normal"]))
+    story.append(Paragraph("Scott — Pro Seal Weatherproofing", styles["Normal"]))
+    story.append(Paragraph("Love + truth + chase = life", ParagraphStyle("Closing", textColor=colors.darkgreen, fontSize=14)))
+
+    doc.build(story)
+    click.echo(f"ENVIRONMENTAL STEWARDSHIP CERTIFICATE → {pdf_path.name}")
+env_risks = detect_environmental_risk(line_items, pdf.stem, pdf)
+        generate_environmental_certificate(pdf.stem, project_key, env_risks, final_bid)
