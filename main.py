@@ -161,3 +161,68 @@ def is_entity_allowed(entity_name: str, entity_type: str, bypass_reason: str = "
         return True
 
     return True
+# === SOVEREIGN AUDIT TRAIL ===
+AUDIT_LOG = OUTPUT_DIR / "ethics_audit.log"
+
+def audit_log(event_type: str, category: str, entity: str, result: str, reason: str = ""):
+    line = f"{datetime.now().isoformat()} | {event_type.ljust(7)} | {category.ljust(12} | {entity.ljust(20)} | {result.ljust(8)} | {reason}\n"
+    with open(AUDIT_LOG, "a") as f:
+        f.write(line)
+
+# Log config at startup
+def log_ethics_config():
+    e = cfg["ethics"]
+    audit_log("AUDIT", "config", "ethics_enabled", str(e["enabled"]))
+    audit_log("AUDIT", "config", "mode", e.get("mode", "blacklist"))
+    audit_log("AUDIT", "config", "strict_mode", str(e.get("strict_mode", False)))
+    audit_log("AUDIT", "config", "emergency_mode", str(e["emergency_mode"]["active"]))
+    if e["emergency_mode"]["active"]:
+        audit_log("AUDIT", "config", "emergency_reason", e["emergency_mode"].get("reason", ""))
+
+# Updated is_entity_allowed with full auditing
+def is_entity_allowed(entity_name: str, entity_type: str, bypass_reason: str = "") -> bool:
+    if not cfg["ethics"]["enabled"]:
+        audit_log("CHECK", entity_type, entity_name, "ALLOWED", "ethics disabled")
+        return True
+
+    # Emergency mode
+    if cfg["ethics"]["emergency_mode"]["active"]:
+        audit_log("CHECK", entity_type, entity_name, "ALLOWED", f"EMERGENCY MODE: {cfg['ethics']['emergency_mode']['reason']}")
+        return True
+
+    name = entity_name.strip().split()[0] if entity_type == "manufacturer" else entity_name
+    mode = cfg["ethics"].get("mode", "blacklist")
+
+    # Manual bypass
+    bypass_cfg = cfg["ethics"]["bypass"]
+    if bypass_cfg["enabled"]:
+        override_key = f"allow_{entity_type}_override"
+        if bypass_cfg.get(override_key, False) and bypass_reason:
+            audit_log("BYPASS", entity_type, entity_name, "ALLOWED", reason=bypass_reason)
+            return True
+
+    # Normal blade
+    if mode == "blacklist":
+        if name in BLACKLIST:
+            audit_log("CHECK", entity_type, name, "BLOCKED", "in blacklist")
+            if cfg["ethics"]["strict_mode"]:
+                raise SystemExit(1)
+            return False
+        else:
+            audit_log("CHECK", entity_type, name, "ALLOWED", "not blacklisted")
+            return True
+
+    elif mode == "whitelist":
+        if name in WHITELIST:
+            audit_log("CHECK", entity_type, name, "ALLOWED", "in Circle of Honor")
+            return True
+        else:
+            audit_log("CHECK", entity_type, name, "REJECTED", "not in whitelist")
+            if cfg["ethics"]["strict_mode"]:
+                raise SystemExit(1)
+            return False
+
+# Final audit at end of bid
+def finalize_audit(project_name: str, violations: int, overrides: int):
+    status = "CLEAN" if violations == 0 and overrides == 0 else f"OVERRIDDEN ({overrides})" if overrides else f"VIOLATIONS ({violations})"
+    audit_log("FINAL", "project", project_name, status)
