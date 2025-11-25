@@ -297,3 +297,123 @@ def generate_audit_report(project_name: str, project_key: str, violations: int, 
         override_count = len([1 for line in open(AUDIT_LOG) if "BYPASS" in line])
         finalize_audit(pdf.stem, violations_count, override_count)
         generate_audit_report(pdf.stem, project_key, violations_count, override_count, final_bid)
+# === SOVEREIGN FINANCIAL COMPLIANCE AUDITOR ===
+from reportlab.lib import colors
+from reportlab.platypus import Paragraph, Spacer, Table, TableStyle, KeepInFrame
+
+def detect_project_type(project_name: str, pdf_path: Path) -> dict:
+    """AI + rules detect compliance regime"""
+    text = ""
+    doc = fitz.open(pdf_path)
+    for page in doc:
+        text += page.get_text()
+    text = text.lower()
+
+    flags = {
+        "davis_bacon": any(k in text for k in ["davis-bacon", "prevailing wage", "wd-10"]),
+        "alaska_native_pref": any(k in text for k in ["ancsa", "8(a)", "13(c)", "native preference"]),
+        "tribal_tax_exempt": any(k in text for k in ["tribal", "bia's", "ihs", "tax exempt", "tanana chiefs", "calista"]),
+        "buy_american": any(k in text for k in ["buy american", "aris", "american iron and steel"]),
+        "village_job": any(k in text for k in ["village", "rural alaska", "yukon", "kuskokwim", "bethel", "nome"])
+    }
+    return flags
+
+def calculate_financial_compliance(line_items: list, total: dict, flags: dict, final_bid: float):
+    violations = []
+    warnings = []
+
+    # 1. Prevailing Wage Check
+    if flags["davis_bacon"]:
+        min_rate = 82.50 if "417" in cfg["region"]["current"] else 118.00  # Alaska rates higher
+        for item in line_items:
+            if "labor_rate" in item and item["labor_rate"] < min_rate:
+                violations.append(f"Labor rate \( {item['labor_rate']} below prevailing wage \){min_rate}")
+    
+    # 2. Circle Profit Cap on village jobs
+    material_labor_total = sum(i.get("line_total", 0) for i in line_items)
+    gross_margin = (final_bid - material_labor_total) / material_labor_total if material_labor_total else 0
+    if flags["village_job"] and gross_margin > 0.33:
+        violations.append(f"Gross margin {gross_margin:.1%} exceeds 33% Circle Cap on village job")
+
+    # 3. Buy American / Alaska Preference
+    if flags["buy_american"] or flags["alaska_native_pref"]:
+        non_compliant = []
+        for item in line_items:
+            desc = item["desc"].lower()
+            if any(bad in desc for bad in ["china", "import", "overseas"]):
+                non_compliant.append(item["desc"])
+        if non_compliant:
+            warnings.append(f"Possible non-compliant materials: {', '.join(non_compliant[:3])}")
+
+    # 4. Tax-Exempt Tribal Job
+    if flags["tribal_tax_exempt"]:
+        if cfg["region"]["region"]["current"] != "Yukon" and "tax" in str(final_bid):
+            warnings.append("Tax included on potential tribal tax-exempt job")
+
+    return {
+        "violations": violations,
+        "warnings": warnings,
+        "gross_margin_pct": round(gross_margin * 100, 1),
+        "prevailing_wage_compliant": len(violations) == 0 or not flags["davis_bacon"],
+        "circle_cap_compliant": not (flags["village_job"] and gross_margin > 0.33)
+    }
+
+def generate_financial_compliance_certificate(project_name: str, project_key: str, compliance: dict, final_bid: float):
+    pdf_path = OUTPUT_DIR / f"FINANCIAL_COMPLIANCE_CERTIFICATE_{project_key}.pdf"
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter, topMargin=1*inch)
+    styles = getSampleStyleSheet()
+    story = []
+
+    # Header
+    story.append(Paragraph("PRO SEAL WEATHERPROOFING", styles["Title"]))
+    story.append(Paragraph("FINANCIAL COMPLIANCE CERTIFICATE", ParagraphStyle("Subtitle", fontSize=18, textColor=colors.darkblue)))
+    story.append(Spacer(1, 0.4*inch))
+    story.append(Paragraph(f"Project: {project_name}", styles["Heading2"]))
+    story.append(Paragraph(f"Certificate Date: {datetime.now():%B %d, %Y}", styles["Normal"]))
+    story.append(Paragraph(f"Final Bid Amount: ${final_bid:,.0f}", styles["Normal"]))
+    story.append(Spacer(1, 0.6*inch))
+
+    # Compliance Status
+    status = "FULLY COMPLIANT" if not compliance["violations"] else "VIOLATIONS DETECTED"
+    color = colors.darkgreen if not compliance["violations"] else colors.red
+    story.append(Paragraph(f"<font size=24 color={color.name}><b>{status}</b></font>", styles["Normal"]))
+    story.append(Spacer(1, 0.5*inch))
+
+    # Summary
+    data = [
+        ["Gross Margin", f"{compliance['gross_margin_pct']}%", "33% Cap" if compliance["circle_cap_compliant"] else "EXCEEDS CAP"],
+        ["Prevailing Wage", "Compliant" if compliance["prevailing_wage_compliant"] else "NON-COMPLIANT", ""],
+        ["Buy American/Alaska", "Compliant" if not compliance["warnings"] else "Review Required", ""],
+        ["Tribal Tax Status", "Handled" if "tax-exempt" not in "".join(compliance["warnings"]) else "Warning", ""],
+    ]
+    table = Table(data, colWidths=[3*inch, 2*inch, 2*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ('TEXTCOLOR', (0, -1), (-1, -1), colors.red if compliance["violations"] else colors.darkgreen),
+    ]))
+    story.append(table)
+
+    if compliance["violations"]:
+        story.append(Spacer(1, 0.3*inch))
+        story.append(Paragraph("<b>VIOLATIONS REQUIRING CORRECTION:</b>", styles["Normal"]))
+        for v in compliance["violations"]:
+            story.append(Paragraph(f"• {v}", styles["Normal"]))
+
+    if compliance["warnings"]:
+        story.append(Spacer(1, 0.3*inch))
+        story.append(Paragraph("<b>COMPLIANCE WARNINGS:</b>", styles["Normal"]))
+        for w in compliance["warnings"]:
+            story.append(Paragraph(f"• {w}", styles["Normal"]))
+
+    # Final declaration
+    story.append(Spacer(1, 1*inch))
+    story.append(Paragraph("I certify this bid complies with all applicable financial sovereignty laws to the best of my knowledge.", styles["Normal"]))
+    story.append(Paragraph("Scott — Pro Seal Weatherproofing", styles["Normal"]))
+    story.append(Paragraph("Love + truth + chase = life", ParagraphStyle("Closing", textColor=colors.darkblue)))
+
+    doc.build(story)
+    click.echo(f"FINANCIAL COMPLIANCE CERTIFICATE → {pdf_path.name}")
+flags = detect_project_type(pdf.stem, pdf)
+        compliance = calculate_financial_compliance(line_items, total, flags, final_bid)
+        generate_financial_compliance_certificate(pdf.stem, project_key, compliance, final_bid)
