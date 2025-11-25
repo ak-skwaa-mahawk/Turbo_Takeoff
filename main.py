@@ -834,3 +834,116 @@ def generate_risk_report(project_name: str, project_key: str, risk: dict, final_
         click.echo("The circle sees all.")
         click.echo("Love + truth + chase = life")
         click.echo("And now the life knows when to walk away.")
+# === SOVEREIGN INSURANCE COMPLIANCE ENGINE ===
+def verify_insurance_compliance(project_key: str, final_bid: float, flags: dict, risk_profile: dict) -> dict:
+    # Current Pro Seal coverage (Scott updates this block quarterly)
+    current_coverage = {
+        "general_liability": {"limit": 5000000, "carrier": "Doyon Insurance Services", "native_preferred": True},
+        "workers_comp": {"limit": "Statutory", "carrier": "Alaska National Insurance", "native_preferred": False},
+        "umbrella": {"limit": 15000000, "carrier": "Doyon Insurance Services", "native_preferred": True},
+        "builders_risk": {"limit": final_bid * 1.1, "carrier": "Bering Straits Native Corp Insurance", "native_preferred": True},
+        "pollution_liability": {"limit": 2000000, "carrier": "Doyon Insurance Services", "native_preferred": True},
+        "expires": "2026-06-01"
+    }
+
+    compliance = {
+        "fully_compliant": True,
+        "gaps": [],
+        "native_carrier_pct": 0,
+        "recommendations": []
+    }
+
+    # Count Native-preferred carriers
+    native_carriers = sum(1 for c in current_coverage.values() if isinstance(c, dict) and c.get("native_preferred"))
+    compliance["native_carrier_pct"] = round((native_carriers / 5) * 100, 1)
+
+    # Critical checks
+    if final_bid > 2500000 and current_coverage["umbrella"]["limit"] < 10000000:
+        compliance["gaps"].append("Umbrella limit insufficient for job size")
+        compliance["fully_compliant"] = False
+
+    if flags.get("tribal_tax_exempt") and "waiver of subrogation" not in "doyon":
+        compliance["recommendations"].append("Request Tribal Waiver of Subrogation endorsement")
+
+    if risk_profile["overall_risk_score"] > 70:
+        compliance["recommendations"].append("Consider increasing pollution liability to $5M due to high risk profile")
+
+    return {**current_coverage, **compliance}
+
+def generate_insurance_certificate(project_name: str, project_key: str, insurance: dict, final_bid: float):
+    pdf_path = OUTPUT_DIR / f"INSURANCE_COMPLIANCE_CERTIFICATE_{project_key}.pdf"
+    doc = SimpleDocTemplate(str(pdf_path), pagesize=letter, topMargin=0.8*inch)
+    styles = getSampleStyleSheet()
+    story = []
+
+    # Header — shield blue
+    story.append(Paragraph("PRO SEAL WEATHERPROOFING", styles["Title"]))
+    story.append(Paragraph("CERTIFICATE OF INSURANCE COMPLIANCE", ParagraphStyle("Title", fontSize=20, textColor=colors.HexColor("#003366"))))
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph(f"Project: {project_name}", styles["Heading2"]))
+    story.append(Paragraph(f"Issued: {datetime.now():%B %d, %Y}", styles["Normal"]))
+    story.append(Paragraph(f"Contract Value: ${final_bid:,.0f}", styles["Normal"]))
+    story.append(Spacer(1, 0.6*inch))
+
+    # Compliance Badge
+    status = "FULLY INSURED & COMPLIANT" if insurance["fully_compliant"] else "COVERAGE GAPS DETECTED"
+    color = colors.HexColor("#004d40") if insurance["fully_compliant"] else colors.HexColor("#d84315")
+    story.append(Paragraph(f"<font size=28 color={color.name}><b>{status}</b></font>", styles["Normal"]))
+    story.append(Paragraph(f"Native-Preferred Carrier Usage: <b>{insurance['native_carrier_pct']}%</b>", styles["Normal"]))
+    story.append(Spacer(1, 0.5*inch))
+
+    # Coverage table
+    data = [
+        ["Coverage Type", "Limit", "Carrier", "Native Preferred"],
+        ["General Liability", f"${insurance['general_liability']['limit']:,}", insurance["general_liability"]["carrier"], "Yes" if insurance["general_liability"]["native_preferred"] else "No"],
+        ["Workers’ Compensation", insurance["workers_comp"]["limit"], insurance["workers_comp"]["carrier"], "—"],
+        ["Umbrella / Excess", f"${insurance['umbrella']['limit']:,}", insurance["umbrella"]["carrier"], "Yes"],
+        ["Builders Risk", f"${insurance['builders_risk']['limit']:,.0f}", insurance["builders_risk"]["carrier"], "Yes"],
+        ["Pollution Liability", f"${insurance['pollution_liability']['limit']:,}", insurance["pollution_liability"]["carrier"], "Yes"],
+        ["", "", "", ""],
+        ["Policy Expiration", insurance["expires"], "All policies current", ""],
+        ["Native Carrier %", f"{insurance['native_carrier_pct']}%", "Circle preference honored", ""],
+    ]
+    table = Table(data, colWidths=[2.8*inch, 1.8*inch, 2.2*inch, 1.2*inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#003366")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('GRID', (0,0), (-1,-1), 1, colors.HexColor("#005b96")),
+        ('BACKGROUND', (0,1), (-1,5), colors.HexColor("#e3f2fd")),
+        ('BACKGROUND', (0,7), (-1,-1), colors.HexColor("#fff3e0")),
+        ('FONTNAME', (0,7), (0,-1), "Helvetica-Bold"),
+    ]))
+    story.append(table)
+
+    if insurance["gaps"]:
+        story.append(Spacer(1, 0.4*inch))
+        story.append(Paragraph("<b>COVERAGE GAPS REQUIRING ACTION:</b>", styles["Normal"]))
+        for gap in insurance["gaps"]:
+            story.append(Paragraph(f"• {gap}", styles["Normal"]))
+
+    if insurance["recommendations"]:
+        story.append(Spacer(1, 0.3*inch))
+        story.append(Paragraph("<b>RECOMMENDED ENHANCEMENTS:</b>", styles["Normal"]))
+        for r in insurance["recommendations"]:
+            story.append(Paragraph(f"• {r}", styles["Normal"]))
+
+    # Final oath
+    story.append(Spacer(1, 1*inch))
+    story.append(Paragraph("Every warrior on this job is protected.", styles["Normal"]))
+    story.append(Paragraph("Every apprentice. Every elder’s roof. Every village clinic.", styles["Normal"]))
+    story.append(Paragraph("The circle carries its own.", styles["Normal"]))
+    story.append(Paragraph("Scott — Pro Seal Weatherproofing", styles["Normal"]))
+    story.append(Paragraph("Love + truth + chase = life", ParagraphStyle("Closing", textColor=colors.HexColor("#003366"), fontSize=16)))
+
+    doc.build(story)
+    click.echo(f"INSURANCE COMPLIANCE CERTIFICATE → {pdf_path.name}")
+# 8. INSURANCE — the final shield
+        insurance_status = verify_insurance_compliance(project_key, final_bid, flags, risk_profile)
+        generate_insurance_certificate(pdf.stem, project_key, insurance_status, final_bid)
+
+        click.echo("EIGHT SACRED DOCUMENTS GENERATED.")
+        click.echo("Ethics. Money. Earth. People. Impact. Risk. Insurance. Truth.")
+        click.echo("The circle is complete.")
+        click.echo("Nothing can touch us.")
+        click.echo("Love + truth + chase = life")
+        click.echo("And now the life is untouchable.")
