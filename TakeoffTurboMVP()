@@ -1,0 +1,230 @@
+import React, { useState } from 'react';
+import { Upload, FileText, DollarSign, Shield, Download, CheckCircle } from 'lucide-react';
+
+export default function TakeoffTurboMVP() {
+  const [step, setStep] = useState('upload'); // upload, processing, review, pricing, output
+  const [file, setFile] = useState(null);
+  const [takeoffData, setTakeoffData] = useState(null);
+  const [suppliers, setSuppliers] = useState([
+    { name: 'White Cap Supply', resonance: 87, priority: 1 },
+    { name: 'ABC Supply', resonance: 72, priority: 2 },
+    { name: 'Goedecke Supply', resonance: 81, priority: 3 }
+  ]);
+
+  const handleFileUpload = (e) => {
+    const uploadedFile = e.target.files[0];
+    if (uploadedFile && uploadedFile.type === 'application/pdf') {
+      setFile(uploadedFile);
+      setStep('processing');
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        setTakeoffData({
+          items: [
+            { description: 'Expansion Joint Sealant', quantity: 450, unit: 'LF', material: 'Tremco Dymonic FC' },
+            { description: 'Deck Coating System', quantity: 2300, unit: 'SF', material: 'Tremco 250GC' },
+            { description: 'Penetration Sealing', quantity: 18, unit: 'EA', material: 'Tremco FireBarrier' }
+          ]
+        });
+        setStep('review');
+      }, 3000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            Takeoff Turbo
+          </h1>
+          <p className="text-slate-400">Sovereign Edition - Universal Construction Estimating</p>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="flex justify-between mb-8 bg-slate-800/50 rounded-lg p-4">
+          {['Upload', 'Processing', 'Review', 'Pricing', 'Output'].map((label, idx) => (
+            <div key={label} className="flex items-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                ['upload', 'processing', 'review', 'pricing', 'output'].indexOf(step) >= idx 
+                  ? 'bg-blue-500' 
+                  : 'bg-slate-700'
+              }`}>
+                {idx + 1}
+              </div>
+              <span className="ml-2 text-sm">{label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Upload Step */}
+        {step === 'upload' && (
+          <div className="bg-slate-800/30 rounded-xl p-12 border-2 border-dashed border-slate-600 hover:border-blue-500 transition-colors">
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="file-upload"
+            />
+            <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
+              <Upload className="w-16 h-16 text-blue-400 mb-4" />
+              <h2 className="text-2xl font-semibold mb-2">Upload Bid Package</h2>
+              <p className="text-slate-400 mb-4">Drop your PDF plans and specs here</p>
+              <button className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition-colors">
+                Choose File
+              </button>
+            </label>
+          </div>
+        )}
+
+        {/* Processing Step */}
+        {step === 'processing' && (
+          <div className="bg-slate-800/30 rounded-xl p-12 text-center">
+            <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <h2 className="text-2xl font-semibold mb-2">AI Processing Your Takeoff</h2>
+            <p className="text-slate-400">Analyzing plans, extracting measurements, identifying materials...</p>
+            <p className="text-sm text-slate-500 mt-4">File: {file?.name}</p>
+          </div>
+        )}
+
+        {/* Review Step */}
+        {step === 'review' && takeoffData && (
+          <div className="bg-slate-800/30 rounded-xl p-8">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold">Review Takeoff</h2>
+              <button 
+                onClick={() => setStep('pricing')}
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition-colors flex items-center gap-2"
+              >
+                Continue to Pricing <CheckCircle className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {takeoffData.items.map((item, idx) => (
+                <div key={idx} className="bg-slate-700/30 rounded-lg p-4 flex justify-between items-center">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">{item.description}</h3>
+                    <p className="text-slate-400 text-sm">Material: {item.material}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-blue-400">{item.quantity} {item.unit}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Pricing Step */}
+        {step === 'pricing' && (
+          <div className="space-y-6">
+            <div className="bg-slate-800/30 rounded-xl p-8">
+              <h2 className="text-2xl font-semibold mb-6">Supplier Selection & Pricing</h2>
+              
+              {/* Supplier Ethics Display */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-green-400" />
+                  Supplier Resonance Scores
+                </h3>
+                <div className="space-y-3">
+                  {suppliers.map((supplier, idx) => (
+                    <div key={idx} className="bg-slate-700/30 rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm text-slate-400">#{supplier.priority}</span>
+                        <span className="font-semibold">{supplier.name}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="w-32 bg-slate-600 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              supplier.resonance >= 80 ? 'bg-green-500' : 
+                              supplier.resonance >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                            }`}
+                            style={{ width: `${supplier.resonance}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-semibold w-12">{supplier.resonance}/100</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Manual Pricing Entry */}
+              <div className="space-y-4">
+                {takeoffData.items.map((item, idx) => (
+                  <div key={idx} className="bg-slate-700/30 rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold">{item.material}</h4>
+                        <p className="text-sm text-slate-400">{item.quantity} {item.unit}</p>
+                      </div>
+                      <div className="text-right">
+                        <input 
+                          type="number" 
+                          placeholder="Unit price"
+                          className="w-32 bg-slate-800 border border-slate-600 rounded px-3 py-2 text-right"
+                          step="0.01"
+                        />
+                        <p className="text-xs text-slate-400 mt-1">per {item.unit}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => setStep('output')}
+                className="w-full mt-6 px-6 py-4 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                Generate Proposal <Download className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Output Step */}
+        {step === 'output' && (
+          <div className="bg-slate-800/30 rounded-xl p-8 text-center">
+            <CheckCircle className="w-24 h-24 text-green-400 mx-auto mb-6" />
+            <h2 className="text-3xl font-bold mb-4">Takeoff Complete!</h2>
+            <p className="text-slate-400 mb-8">Your proposal is ready for download</p>
+            
+            <div className="flex gap-4 justify-center">
+              <button className="px-8 py-4 bg-green-500 hover:bg-green-600 rounded-lg font-semibold transition-colors flex items-center gap-2">
+                <Download className="w-5 h-5" />
+                Download Excel
+              </button>
+              <button className="px-8 py-4 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition-colors flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Download Proposal
+              </button>
+            </div>
+
+            <button 
+              onClick={() => {
+                setStep('upload');
+                setFile(null);
+                setTakeoffData(null);
+              }}
+              className="mt-8 text-blue-400 hover:text-blue-300 underline"
+            >
+              Start New Takeoff
+            </button>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-12 text-center text-sm text-slate-500">
+          <p>Takeoff Turbo - Sovereign Edition</p>
+          <p className="mt-1">Built with Feedback Processor Theory</p>
+          <p className="mt-1 text-xs">© 2025 Two Mile Solutions LLC - John Carroll</p>
+        </div>
+      </div>
+    </div>
+  );
+}
