@@ -1,0 +1,61 @@
+# Turbo Takeoff – Sovereign Edition
+# config.yaml – edit this once, the robot remembers forever
+
+app:
+  company_name: "Pro Seal Weatherproofing"
+  letterhead_path: "templates/proseal_letterhead.docx"  # drop your DOCX template here
+  default_profit_pct: 28.0
+  output_folder: "output"
+
+region:
+  current: "417"  # Springfield MO area code – change to "Anchorage", "Yukon", "Lower48", etc.
+  regions:
+    "417":
+      name: "Springfield / Southwest Missouri"
+      tax_rate: 0.08225
+    "Anchorage":
+      name: "Anchorage Alaska"
+      tax_rate: 0.0
+    "Yukon":
+      name: "Yukon-Kuskokwim"
+      tax_rate: 0.0
+    "Lower48":
+      name: "Lower 48 States"
+      tax_rate: 0.08225  # fallback
+
+suppliers:
+  - name: "White Cap"
+    url: "https://www.whitecap.com/search?q="
+    active: true
+  - name: "ABC Supply"
+    url: "https://www.abcsupply.com/search/?q="
+    active: true
+  - name: "Goedecke"
+    url: "https://goedecke.com/catalogsearch/result/?q="
+    active: true
+  # add more as needed
+
+manufacturers_priority:   # highest first – robot will try in this order
+  - "Tremco"
+  - "BASF"
+  - "Carlisle"
+  - "Sika"
+  - "Dow"
+  - "Pecora"
+
+ethics:
+  enabled: true                     # THE VHITZEE BLADE – toggle off only if you hate clean circles
+  blacklist_file: "data/ethics_blacklist.yaml"   # companies that scrape villages, bycatch salmon, run defeat devices
+  whitelist_file: "data/ethics_whitelist.yaml"   # optional – Calista-approved, Doyon-blessed, etc.
+  mode: "blacklist"                 # or "whitelist" if you want positive-only
+
+paths:
+  input_pdfs: "input/"
+  training_data: "chroma_db/"
+  templates: "templates/"
+  ethics_data: "data/"
+
+gemini:
+  model: "gemini-2.0-flash-exp"
+  temperature: 0.0
+  max_output_tokens: 8192
