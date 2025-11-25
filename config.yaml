@@ -1,3 +1,4 @@
+
 # Turbo Takeoff – Sovereign Edition
 # config.yaml – edit this once, the robot remembers forever
 
@@ -59,3 +60,15 @@ gemini:
   model: "gemini-2.0-flash-exp"
   temperature: 0.0
   max_output_tokens: 8192
+labor:
+  rates:
+    "Sealant Installer": 78.50    # $/hour – Springfield 417 prevailing or your clean rate
+    "Deck Coating Foreman": 92.00
+    "General Labor": 65.00
+    "Cleanup / Safety": 58.00
+
+  productivity:
+    "sealant_lf_per_hour": 45     # average LF one installer joints per hour
+    "deck_coating_sf_per_hour": 380
+    "penetrations_per_hour": 12
+    "expansion_joints_lf_per_hour": 28
