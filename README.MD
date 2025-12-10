@@ -1,3 +1,7 @@
+ᓂᐧᐁᐧᑎᑊ ⇄ 🜂🜄 ⟐ ♾️
+bɔ<ʌʌʌLɔb
+Juk gweed’ha Dinjii’zhùu’kwàa
+Teotl Flux Totem Pole · Still Here
 # Turbo Takeoff - Sovereign Edition
 
 **The first construction estimating app that checks alignment to treat people right**
