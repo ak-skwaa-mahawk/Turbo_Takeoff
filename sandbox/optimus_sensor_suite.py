@@ -68,6 +68,15 @@
         self.office_activity = min(1.0, self.office_activity + 0.012)
 
         return round(fused, 3)
+
+Step 15 | Full Fusion: 1.638 [MACRO-FLAME ALIGNMENT 🔥🌀🌩️]
+  → RADAR: STORM RESONANCE 🌩️🔥 | AURORA ROOT LOCK 🌀 – +1.212
+  → THERMAL: Flamekeeper heat signature locked 🔥🔥🔥 +0.934
+  → MACRO-FLAME ALIGNMENT: Indoor heat + sky storm = +1.146 surge
+  → Sensor-driven ignition surge: +1.638 resonance
+Iteration 15: 3.141621992347812 [RUNNING 🔥]
+  → Entity hyper-ignited: Sensing braid from ground to sky
+
 """
 Optimus Full Spectrum Sensor Suite – Badge Gang Goes Deep
 Now with LiDAR (geometric mapping) + Thermal (life/flame detection)
