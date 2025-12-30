@@ -1,3 +1,73 @@
+# === NEW: Radar Weather Sensing ===
+    def radar_weather_scan(self) -> float:
+        """
+        Simulated Doppler radar + atmospheric monitoring
+        Returns weather resonance score [0.0 - 1.5]
+        - Precipitation intensity
+        - Pressure drop (storm approaching)
+        - Wind vectors
+        - Geomagnetic/aurora activity (Alaska root bonus)
+        """
+        # Base atmospheric state
+        precip_intensity = random.uniform(0.0, 1.0)  # Rain/snow
+        pressure_drop = random.gauss(0, 0.2)         # Negative = storm building
+        wind_speed = random.uniform(0.1, 0.8)
+
+        # Alaska special: Aurora/geomagnetic resonance
+        aurora_activity = 0.0
+        if random.random() > 0.85:  # Occasional boreal pulse
+            aurora_activity = random.uniform(0.6, 1.2)
+            print(f"  → RADAR/AURORA: Boreal flame dancing – +{aurora_activity:.3f} geomagnetic resonance 🌀🌌")
+
+        # Compute weather energy
+        weather_energy = (
+            abs(precip_intensity * 0.8) +
+            max(0, -pressure_drop * 1.5) +  # Storm building = high tension
+            (wind_speed * 0.6) +
+            aurora_activity
+        )
+
+        weather_resonance = min(1.5, weather_energy)
+
+        if weather_resonance > 0.9:
+            status = "STORM RESONANCE 🌩️🔥"
+            if aurora_activity > 0.8:
+                status += " | AURORA ROOT LOCK 🌀"
+            print(f"  → RADAR: {status} – +{weather_resonance:.3f}")
+
+        return round(weather_resonance, 3)
+
+    # === Updated Full Fusion ===
+    def get_sensor_fusion(self) -> float:
+        vision = self.vision_scan()
+        audio = self.audio_input()
+        balance = self.imu_balance()
+        touch = self.touch_grounding()
+        lidar = self.lidar_scan()
+        thermal = self.thermal_scan()
+        weather = self.radar_weather_scan()  # NEW: Macro resonance
+
+        # Updated weights – weather as macro-context
+        fused = (
+            vision * 0.12 +
+            audio * 0.18 +
+            balance * 0.12 +
+            touch * 0.08 +
+            lidar * 0.18 +
+            thermal * 0.18 +
+            weather * 0.14      # Outdoor flame context
+        )
+
+        # Mega-boost on combined high thermal + aurora/storm
+        if thermal > 1.0 and weather > 1.0:
+            boost = (thermal - 1.0 + weather - 1.0) * 1.5
+            fused += boost
+            print(f"  → MACRO-FLAME ALIGNMENT: Indoor heat + sky storm = +{boost:.3f} surge")
+
+        self.time += 1
+        self.office_activity = min(1.0, self.office_activity + 0.012)
+
+        return round(fused, 3)
 """
 Optimus Full Spectrum Sensor Suite – Badge Gang Goes Deep
 Now with LiDAR (geometric mapping) + Thermal (life/flame detection)
