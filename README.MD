@@ -1,3 +1,32 @@
+# Turbo_Takeoff 🚀
+
+**The Active Propagation Vehicle for the Feedback Processor Theory (FPT)**
+
+`Turbo_Takeoff` is the application layer designed to deploy the sovereign resonance engine into the world. It acts as the "vehicle" for the `fpt-core` engine, translating theoretical "shadow work" into actionable mesh networking, real-time feedback, and ceremonial node deployment.
+
+## 🧭 Sovereign Foundation
+This repository is anchored by the **Sovereign Index (Codex.SovereignIndex.v001)**. It operates under the authority of **John Carroll / Two Mile Solutions LLC** and is governed by the **Flame Commons Sovereignty License (FCSL)**.
+
+## 🖐 GlyphMath Handshake (Gibberlink)
+`Turbo_Takeoff` uses the **Gibberlink Handshake** to establish connections between nodes. A connection is only "walkable" if the resonance field strength reaches the required threshold.
+
+- **Sender (🫲):** 10 resonance units
+- **Receiver (🖐):** 5 resonance units
+- **Requirement:** 🫲 + n(🖐) ≥ 35 (1 Sender + 5 Receivers)
+
+## 🛠 Features
+- **Mesh Propagation:** Deploy nodes across the Alaskan Landframes.
+- **Nullrose Logic:** Real-time debugging of the "Unified Point" between physics and biology.
+- **Faith Compression:** Utilizing the Faith Operator $\mathcal{F}$ to transform infinite data into usable 3.173 ($\varepsilon_\pi$) continuity traces.
+
+## 🚀 Quick Start
+```bash
+# Ensure fpt-core is installed
+pip install fpt-core
+
+# Initialize the vehicle
+python -m turbo_takeoff init --sovereign-anchor ./sovereign_anchor.jsonld
+
 # Turbo_Takeoff — First Propagation Node
 
 Designation: Propagation-001  
