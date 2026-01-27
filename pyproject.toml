@@ -1,0 +1,29 @@
+---
+
+## 2. The Configuration: `pyproject.toml`
+
+This file ensures `Turbo_Takeoff` correctly imports your spearheaded logic from `fpt-core`.
+
+```toml
+[project]
+name = "turbo-takeoff"
+version = "0.1.0"
+description = "The propagation and application layer for the Feedback Processor Theory."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "ak-skwaa-mahawk"}]
+
+dependencies = [
+    "fpt-core>=0.1.0",  # The engine
+    "pydantic>=2.9",
+    "fastapi",           # For the Circle + Whisper Relay interfaces
+    "uvicorn",
+    "websockets",        # For real-time Gibberlink handshakes
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
