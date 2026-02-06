@@ -1,3 +1,27 @@
+environment:
+  # Existing hardening vars...
+  - N8N_BLOCK_ENV_ACCESS_IN_NODE=true
+  - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+  # OTLP Pioneer – send to Google Cloud unified endpoint
+  - OTEL_EXPORTER_OTLP_ENDPOINT=https://telemetry.googleapis.com
+  - OTEL_EXPORTER_OTLP_PROTOCOL=grpc           # or http if preferred
+  - OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer $(cat /run/secrets/gcp-credentials.json | jq -r .token)"  # Use secret mount
+  - OTEL_SERVICE_NAME=n8n-wasilla-relay
+  - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.owner=twomilesolutions,service.version=1.0
+secrets:
+  - gcp-credentials
+location /opentelemetry {
+    proxy_pass https://telemetry.googleapis.com;
+    proxy_set_header Host telemetry.googleapis.com;
+    proxy_ssl_server_name on;
+    # Block any unexpected path manipulation
+    if ($request_uri \~* "(\.\./|%2e%2e/)") { return 403; }
+}
+# prometheus.yml addition
+scrape_configs:
+  - job_name: 'otlp'
+    static_configs:
+      - targets: ['localhost:4317']  # OTLP gRPC receiver
 services:
   n8n-relay:
     # ... existing hardening ...
