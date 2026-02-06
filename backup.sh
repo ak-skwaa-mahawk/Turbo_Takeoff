@@ -1,3 +1,5 @@
+# Sovereign Shield - Daily 02:00 AKST backup
+0 2 * * * /opt/sovereign-backup/backup.sh >> /var/log/sovereign-backup.log 2>&1
 #!/bin/bash
 # TWO MILE SOLUTIONS LLC - Sovereign Backup Script
 # Requires: restic, rclone (configured for your off-site target like S3/B2)
