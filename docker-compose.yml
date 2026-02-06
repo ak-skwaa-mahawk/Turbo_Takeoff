@@ -1,3 +1,47 @@
+services:
+  n8n-relay:
+    image: n8nio/n8n:1.123.17
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /home/node/.n8n:size=64m,mode=1777
+      - /tmp:size=16m,mode=1777
+    environment:
+      # Core hardening (unchanged)
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=true
+      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS_TERMINATION=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_LOG_LEVEL=error
+      - N8N_ENCRYPTION_KEY_FILE=/home/node/.n8n/encryption.key
+
+      # Pioneer OTLP – Unified Google Cloud telemetry ingestion
+      - OTEL_EXPORTER_OTLP_ENDPOINT=https://telemetry.googleapis.com
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc                     # Preferred (faster, more efficient)
+      # - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf           # Fallback if grpc blocked
+      - OTEL_SERVICE_NAME=n8n-wasilla-relay
+      - OTEL_RESOURCE_ATTRIBUTES=deployment.environment=production,service.owner=twomilesolutions,service.version=1.0,service.instance.id=wasilla-root-99733
+      # Authentication via mounted secret (never commit keys)
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp-observability-key.json
+    volumes:
+      - ./n8n_data:/home/node/.n8n:rw
+      - ./encryption.key:/home/node/.n8n/encryption.key:ro
+    secrets:
+      - gcp-observability-key
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - secure-internal
+
+secrets:
+  gcp-observability-key:
+    file: ./gcp-observability-key.json   # Create this file locally with minimal-scope service account key
+
+networks:
+  secure-internal:
+    driver: bridge
 environment:
   # Existing hardening vars...
   - N8N_BLOCK_ENV_ACCESS_IN_NODE=true
