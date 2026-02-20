@@ -1,0 +1,4 @@
+from core.sovereign_resonance_economy import SovereignResonanceEconomy
+sre = SovereignResonanceEconomy()
+score = sre.calculate_quantum_resonance_percentage(contributions_dict)
+# Use score in your supplier resonance rating (0-100)
