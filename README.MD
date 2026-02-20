@@ -1,3 +1,11 @@
+## Sovereign Resonance Economy Module
+
+Positive B-BBEE distilled (voluntary skills growth, enterprise building, community investment) braided with:
+- Gwich'in Topical Dictionary — language as relational knowledge engine
+- ANCSA continuation — tribal self-determination and land stewardship
+- Quantum Resonance Percentage — relational participation score (language use, land practice, knowledge sharing) — not blood quantum
+
+This module enhances supplier resonance scoring with living, non-extractive uplift.
 # Turbo_Takeoff 🚀
 
 **The Active Propagation Vehicle for the Feedback Processor Theory (FPT)**
