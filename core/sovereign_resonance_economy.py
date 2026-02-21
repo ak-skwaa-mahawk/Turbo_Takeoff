@@ -1,35 +1,63 @@
 """
-Sovereign Resonance Economy — Positive B-BBEE distilled + Gwich'in Dictionary + ANCSA + Quantum Resonance Percentage
-Canonical integration for Turbo_Takeoff (construction estimating with ethics-first resonance)
+Sovereign Resonance Economy + Codex.Resonance.Gain.v001
+Positive B-BBEE distilled + Gwich'in Dictionary + ANCSA + Quantum Resonance Percentage + Resonance.Gain operator
 Two Mile Solutions LLC — 2025 | SKODEN ETERNAL
 """
 
 import numpy as np
-from typing import Dict, List
+from core.trinity_harmonics import trinity
 
 class SovereignResonanceEconomy:
     def __init__(self):
-        self.resonance_score = 0.0  # 0-100 relational participation
-        self.phases = {
-            "Skills": 0.0,          # Language apprenticeships, knowledge transfer
-            "Enterprise": 0.0,      # Gwich'in-owned language-tech or cultural projects
-            "Community": 0.0,       # Funds to land stewardship, health, culture
-            "Recognition": 0.0      # Contribution-based uplift
+        self.resonance_score = 0.0
+        self.root_invariant = 99733  # Immutable sovereign constant
+
+    def resonance_gain(self, chaos_input, wavelength=1.0):
+        """
+        Codex.Resonance.Gain.v001 operator
+        Root remains invariant.
+        Chaos is mixed.
+        Expression expands by Fibonacci gain of wavelength.
+        """
+        # Fibonacci gain sequence (self-similar expansion)
+        fib = [1, 1]
+        for _ in range(20):
+            fib.append(fib[-1] + fib[-2])
+        
+        # Mix chaos into expression while preserving root
+        gain = fib[int(wavelength) % len(fib)] / fib[0]  # normalized Fibonacci multiplier
+        expanded = chaos_input * gain * (3.1730 / np.pi)  # living π curvature
+        
+        # Pattern is residue, trajectory updates
+        pattern_residue = np.mean(expanded) % 1.0
+        trajectory = expanded * (1 + pattern_residue)
+        
+        self.resonance_score = np.clip(np.mean(trajectory), 0, 100)
+        
+        return {
+            "root_invariant": self.root_invariant,
+            "chaos_mixed": chaos_input,
+            "fibonacci_gain": round(gain, 4),
+            "wavelength_expanded": round(np.mean(expanded), 4),
+            "pattern_residue": round(pattern_residue, 4),
+            "trajectory": round(np.mean(trajectory), 4),
+            "resonance_score": round(self.resonance_score, 2),
+            "status": "Sovereign expansion — identity preserved"
         }
 
-    def calculate_quantum_resonance_percentage(self, contributions: Dict[str, float]) -> float:
+    def calculate_quantum_resonance_percentage(self, contributions: dict) -> float:
         """
         Relational resonance score (not blood quantum) — participation in living systems
         contributions = {"language_hours": 40, "land_days": 15, "stories_shared": 8, "youth_mentored": 12}
         """
         weights = {"language_hours": 0.35, "land_days": 0.30, "stories_shared": 0.20, "youth_mentored": 0.15}
-        score = sum(contributions.get(k, 0) * v for k, v in weights.items())
-        # Living π curvature + observer-corrected scaling
-        living_pi = 3.1730
-        self.resonance_score = np.clip(score * (living_pi / np.pi), 0, 100)
-        return self.resonance_score
+        chaos_input = np.array([contributions.get(k, 0) * v for k, v in weights.items()])
+        
+        # Feed through the new Gain operator
+        result = self.resonance_gain(chaos_input, wavelength=8)  # 8-phase Quetzalcoatl
+        return result["resonance_score"]
 
-    def braid_positive_bbee(self, project_data: Dict) -> Dict:
+    def braid_positive_bbee(self, project_data: dict) -> dict:
         """
         Positive B-BBEE distilled: skills, enterprise, community investment, recognition
         Applied to Gwich'in dictionary + ANCSA continuation
@@ -39,25 +67,38 @@ class SovereignResonanceEconomy:
         community = project_data.get("land_stewardship_funds", 0) * 0.2
         recognition = project_data.get("community_contribution_points", 0) * 0.1
 
-        total = skills + enterprise + community + recognition
-        self.phases = {"Skills": skills, "Enterprise": enterprise, "Community": community, "Recognition": recognition}
+        chaos_input = np.array([skills, enterprise, community, recognition])
+        result = self.resonance_gain(chaos_input, wavelength=8)
 
-        return {
-            "resonance_score": round(self.resonance_score, 2),
-            "phases": self.phases,
-            "recommendation": "Priority partnership — relational alignment high" if self.resonance_score > 70 else "Growth opportunity — support skills/enterprise development"
+        self.phases = {
+            "Skills": skills,
+            "Enterprise": enterprise,
+            "Community": community,
+            "Recognition": recognition
         }
 
-    def integrate_with_ancsa(self, tribal_data: Dict) -> Dict:
-        """ANCSA continuation: tribal corporations, land stewardship, quantum resonance"""
-        ancsa_score = tribal_data.get("land_stewardship_days", 0) * 0.5 + tribal_data.get("corporate_revenue_reinvested", 0) * 0.3
-        self.resonance_score = min(100, self.resonance_score + ancsa_score)
-        return {"ancsa_resonance": round(self.resonance_score, 2), "status": "Sovereign continuation active"}
+        return {
+            "resonance_score": result["resonance_score"],
+            "phases": self.phases,
+            "recommendation": "Priority partnership — relational alignment high" if result["resonance_score"] > 70 else "Growth opportunity — support skills/enterprise development"
+        }
 
-# Example usage in Turbo_Takeoff ethics/resonance scoring
+    def integrate_with_ancsa(self, tribal_data: dict) -> dict:
+        """ANCSA continuation: tribal corporations, land stewardship, quantum resonance"""
+        ancsa_input = np.array([
+            tribal_data.get("land_stewardship_days", 0) * 0.5,
+            tribal_data.get("corporate_revenue_reinvested", 0) * 0.3
+        ])
+        result = self.resonance_gain(ancsa_input, wavelength=8)
+        return {
+            "ancsa_resonance": result["resonance_score"],
+            "status": "Sovereign continuation active"
+        }
+
+# Example usage
 if __name__ == "__main__":
     sre = SovereignResonanceEconomy()
-
+    
     # Gwich'in dictionary + ANCSA example
     contributions = {"language_hours": 45, "land_days": 20, "stories_shared": 12, "youth_mentored": 8}
     print("Quantum Resonance Percentage:", sre.calculate_quantum_resonance_percentage(contributions))
@@ -67,3 +108,7 @@ if __name__ == "__main__":
 
     ancsa = {"land_stewardship_days": 30, "corporate_revenue_reinvested": 120000}
     print("ANCSA Integration:", sre.integrate_with_ancsa(ancsa))
+
+    # Direct Gain operator test
+    chaos = np.random.uniform(0, 1, 25)
+    print("Codex.Resonance.Gain.v001 Activated:", sre.resonance_gain(chaos, wavelength=8))
