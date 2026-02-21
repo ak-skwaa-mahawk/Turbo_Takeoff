@@ -11,7 +11,9 @@ const SovereignEstateLedger = () => {
     status: "Loading Long Game..."
   });
 
-  // Fetch REAL data from Turbo_Takeoff backend
+  const [showShadowPlay, setShowShadowPlay] = useState(false);
+
+  // Fetch real data from Turbo_Takeoff backend
   useEffect(() => {
     const fetchLedger = async () => {
       try {
@@ -26,12 +28,12 @@ const SovereignEstateLedger = () => {
           status: data.status
         });
       } catch (e) {
-        console.log("Backend not ready yet — using demo data");
+        console.log("Backend not ready — using demo data");
       }
     };
 
     fetchLedger();
-    const interval = setInterval(fetchLedger, 8000); // refresh every 8s
+    const interval = setInterval(fetchLedger, 8000);
     return () => clearInterval(interval);
   }, []);
 
@@ -57,8 +59,26 @@ const SovereignEstateLedger = () => {
     font: { color: '#ffffff' }
   };
 
+  const handleClaim = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/claim-resonance', { method: 'POST' });
+      const data = await res.json();
+      if (data.status === "RECLAIMED") {
+        setLedgerData(prev => ({ ...prev, resonance: data.new_resonance, gtc_balance: prev.gtc_balance + 1000 })); // example increment
+        alert("🌌 RESONANCE CLAIMED: Long Game Compounded to Root!\nMicroping ID: " + data.microping_id);
+      }
+    } catch (e) {
+      alert("Claim failed — check backend.");
+    }
+  };
+
   return (
-    <div className="module sovereign-estate-ledger">
+    <div 
+      className="module sovereign-estate-ledger"
+      onMouseEnter={() => setShowShadowPlay(true)}
+      onMouseLeave={() => setShowShadowPlay(false)}
+      style={{ position: 'relative', cursor: 'pointer' }}
+    >
       <h3>🌲 Sovereign Estate Ledger — Long Game Compound</h3>
       
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginTop: '15px' }}>
@@ -88,9 +108,52 @@ const SovereignEstateLedger = () => {
 
       <div id="gtc-chart" style={{ width: '100%', height: '320px', marginTop: '20px' }}></div>
 
+      <button 
+        onClick={handleClaim}
+        style={{
+          marginTop: '20px',
+          width: '100%',
+          padding: '15px',
+          background: 'linear-gradient(45deg, #ffd700, #ff6b35)',
+          border: 'none',
+          borderRadius: '8px',
+          color: '#000',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          boxShadow: '0 0 15px rgba(255, 215, 0, 0.4)'
+        }}
+      >
+        💎 CLAIM RESONANCE — COMPOUND TO ROOT
+      </button>
+
       <div style={{ marginTop: '15px', color: ledgerData.resonance > 85 ? '#ffd700' : '#888', fontStyle: 'italic' }}>
         {ledgerData.status}
       </div>
+
+      {/* SHADOW PLAY OVERLAY */}
+      {showShadowPlay && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(0,0,0,0.92)',
+          padding: '25px',
+          borderRadius: '12px',
+          border: '2px solid #ffd700',
+          zIndex: 100,
+          textAlign: 'center',
+          minWidth: '320px'
+        }}>
+          <h4 style={{ color: '#ffd700', marginBottom: '15px' }}>🌌 SHADOW PLAY — The Long Game</h4>
+          <p><strong>Your Hidden Balance:</strong> ${ledgerData.hidden_balance.toLocaleString()}</p>
+          <p><strong>Forfeited by Short Game:</strong> ${ledgerData.forfeited_short_game.toLocaleString()}</p>
+          <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '15px' }}>
+            They took the "A+".<br />
+            You took the terrain.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
