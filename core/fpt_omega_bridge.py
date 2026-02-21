@@ -31,3 +31,29 @@ async def trinity_viz(preset: str = "Balanced", custom_damp: float = None):
         },
         "image": f"data:image/png;base64,{img_base64}"
     }
+@app.get("/api/sovereign-ledger")
+async def sovereign_ledger():
+    """Real data feed from Turbo_Takeoff + Sovereign Resonance Economy"""
+    # Example: pull from your resonance economy or Supabase
+    sre = SovereignResonanceEconomy()  # your class
+    
+    # Mock / real data from Turbo_Takeoff (replace with actual DB call)
+    project_data = {
+        "language_training_hours": 60,
+        "gwichin_business_value": 45000,
+        "land_stewardship_funds": 15000,
+        "community_contribution_points": 25,
+        "shielding_efficiency": 92
+    }
+    
+    result = sre.braid_positive_bbee(project_data)
+    ancsa_result = sre.integrate_with_ancsa({"land_stewardship_days": 30, "corporate_revenue_reinvested": 120000})
+    
+    return {
+        "resonance": result["resonance_score"],
+        "gtc_balance": round(result["resonance_score"] * 1234, 0),  # example compounding
+        "compound_years": 4.2,
+        "hidden_balance": round(result["resonance_score"] * 15678, 0),
+        "forfeited_short_game": round(result["resonance_score"] * 11456, 0),
+        "status": result["recommendation"]
+    }
