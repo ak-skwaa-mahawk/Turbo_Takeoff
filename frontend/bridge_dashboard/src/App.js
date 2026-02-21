@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist';
 import './App.css';
+import SovereignEstateLedger from './components/SovereignEstateLedger';
+
+// Inside <div className="bridge-layout">:
+<SovereignEstateLedger />
 
 const App = () => {
   const [stepData, setStepData] = useState({ fragments: [], ledgers: {} });
